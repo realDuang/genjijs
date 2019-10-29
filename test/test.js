@@ -1,56 +1,58 @@
 const addModel = {
-  namespace: "add",
+  namespace: 'add',
   state: {
-    num: 0,
+    num: 0
   },
   reducers: {
     add(state, { payload }) {
       console.log(`answer ${state.num + payload.addNum}`);
       return {
-        num: state.num + payload.addNum,
+        num: state.num + payload.addNum
       };
     },
     getNum(state, action) {
       console.log(`getNum ${state.num}`);
-      return state.num;
-    },
-  },
+      return {
+        num
+      };
+    }
+  }
 };
 
 const userModel = {
-  namespace: "user",
+  namespace: 'user',
   state: {
-    name: "",
+    name: ''
   },
   reducers: {
     modify(state, { payload }) {
       const { name } = payload;
       console.log(`change name ${name}`);
       return {
-        name,
+        name
       };
-    },
-  },
+    }
+  }
 };
 
-import Genji from "./src/index";
+import Genji from '../src/index';
 const app = new Genji();
 app.unit(addModel);
 app.unit(userModel);
 
 app.start();
 app._store.dispatch({
-  type: "addModel/add",
+  type: 'addModel/add',
   payload: {
-    addNum: 1,
-  },
+    addNum: 1
+  }
 });
 
 app._store.dispatch({
-  type: "user/modify",
+  type: 'user/modify',
   payload: {
-    name: "synccheng",
-  },
+    name: 'synccheng'
+  }
 });
 
 console.log(app);

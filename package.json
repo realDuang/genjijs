@@ -1,0 +1,33 @@
+{
+  "name": "genjijs",
+  "version": "0.0.1",
+  "description": "探索更好的数据状态管理方式",
+  "main": "test.js",
+  "scripts": {
+    "dev": "webpack-dev-server",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kelekexiao123/genjijs.git"
+  },
+  "author": "synccheng",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kelekexiao123/genjijs/issues"
+  },
+  "homepage": "https://github.com/kelekexiao123/genjijs#readme",
+  "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
+    "babel-loader": "^8.0.6",
+    "babel-preset-env": "^1.7.0",
+    "html-webpack-plugin": "^3.2.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.9",
+    "webpack-dev-server": "^3.9.0"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.6.0"
+  }
+}

@@ -1,5 +1,5 @@
-import createStore from "./createStore";
-import combineReducer from "./combineReducer";
+import createStore from './createStore';
+import combineReducer from './combineReducer';
 
 class Genji {
   constructor() {
@@ -14,11 +14,11 @@ class Genji {
 
   start() {
     // 注册所有的state与reducers
-    for (let i = 0; i < this._units.length; i) {
+    for (let i = 0; i < this._units.length; i++) {
       this._states[this._units[i].namespace] = {
-        ...this._units[i].state,
+        ...this._units[i].state
       };
-      Reflect.ownKeys(this._units[i].reducers).forEach(key => {
+      Reflect.ownKeys(this._units[i].reducers).forEach((key) => {
         this._reducers.push(this._units[i].reducers[key]);
       });
     }

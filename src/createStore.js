@@ -1,15 +1,22 @@
-const combineReducer = reducers => (unit = {}, action) => {
-  let { type } = action;
-  let unitKey = type.split("/")[0];
-  let reducer = type.split("/")[1];
+const createStore = (reducer, initialState) => {
+  let currentReducer = reducer;
+  let currentState = initialState;
+  let listener = () => {};
 
-  reducers.forEach(curReducer => {
-    if (curReducer.name === reducer) {
-      unit[unitKey] = curReducer(unit[unitKey], action);
+  return {
+    getState() {
+      return currentState;
+    },
+    dispatch(action) {
+      let { type } = action;
+      currentState = currentReducer(currentState, action);
+      listener();
+      return action;
+    },
+    subscribe(newListener) {
+      listener = newListener;
     }
-  });
-
-  return unit;
+  };
 };
 
-export default combineReducer;
+export default createStore;
