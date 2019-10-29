@@ -1,5 +1,5 @@
 const addModel = {
-  namespace: "number",
+  namespace: 'number',
   state: {
     num: 0
   },
@@ -20,9 +20,9 @@ const addModel = {
 };
 
 const userModel = {
-  namespace: "user",
+  namespace: 'user',
   state: {
-    name: ""
+    name: ''
   },
   reducers: {
     modify(state, { payload }) {
@@ -35,7 +35,7 @@ const userModel = {
     }
   }
 };
-import Genji from "./src/index";
+import Genji from '../src/index';
 const app = new Genji();
 const addModelTypes = app.unit(addModel);
 const userModelTypes = app.unit(userModel);
@@ -43,29 +43,25 @@ const userModelTypes = app.unit(userModel);
 app.start();
 
 const store = app.getStore();
+
 store.dispatch({
   type: addModelTypes.add,
   payload: {
-    addNum: 3
+    addNum: 1
   }
 });
 
 store.dispatch({
   type: addModelTypes.add,
   payload: {
-    addNum: 5
+    addNum: 1
   }
-});
-
-store.dispatch({
-  type: addModelTypes.getNum,
-  payload: {}
 });
 
 store.dispatch({
   type: userModelTypes.modify,
   payload: {
-    name: "synccheng"
+    name: 'synccheng'
   }
 });
 

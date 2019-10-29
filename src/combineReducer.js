@@ -1,1 +1,1 @@
-export { combineReducers } from "redux";
+export { combineReducers } from 'redux';

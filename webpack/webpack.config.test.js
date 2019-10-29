@@ -1,20 +1,22 @@
-const path = require("path");
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  mode: "development",
-  entry: "./test.js",
-  //   output: {
-  //     filename: "../../dist/dist.js",
-  //     path: path.resolve("..", __dirname, "dist")
-  //   },
+  mode: 'development',
+  entry: './test/test.js',
   output: {
-    filename: "dist.js",
-    path: path.resolve(__dirname, "..", "dist")
+    filename: 'dist.js',
+    path: path.resolve(__dirname, '..', 'dist')
   },
-  devtool: "eval",
+  devtool: 'eval',
   devServer: {
-    contentBase: path.resolve(__dirname, "..", "dist"),
+    contentBase: path.resolve(__dirname, '..', 'dist'),
     compress: true,
     port: 8083
+  },
+  plugins: [new HtmlWebpackPlugin({ template: './index.html' })],
+  resolve: {
+    alias: {},
+    extensions: ['.js', '.json', '.css']
   }
 };
