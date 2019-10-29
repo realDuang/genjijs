@@ -1,56 +1,74 @@
 const addModel = {
-  namespace: "add",
+  namespace: "number",
   state: {
-    num: 0,
+    num: 0
   },
   reducers: {
-    add(state, { payload }) {
+    add(state, { payload, type }) {
       console.log(`answer ${state.num + payload.addNum}`);
       return {
-        num: state.num + payload.addNum,
+        num: state.num + payload.addNum
       };
     },
     getNum(state, action) {
       console.log(`getNum ${state.num}`);
-      return state.num;
-    },
-  },
+      return {
+        num: state.num
+      };
+    }
+  }
 };
 
 const userModel = {
   namespace: "user",
   state: {
-    name: "",
+    name: ""
   },
   reducers: {
     modify(state, { payload }) {
+      if (!payload) return state;
       const { name } = payload;
       console.log(`change name ${name}`);
       return {
-        name,
+        name
       };
-    },
-  },
+    }
+  }
 };
-
 import Genji from "./src/index";
 const app = new Genji();
-app.unit(addModel);
-app.unit(userModel);
+const addModelTypes = app.unit(addModel);
+const userModelTypes = app.unit(userModel);
 
 app.start();
-app._store.dispatch({
-  type: "addModel/add",
+
+const store = app.getStore();
+store.dispatch({
+  type: addModelTypes.add,
   payload: {
-    addNum: 1,
-  },
+    addNum: 3
+  }
 });
 
-app._store.dispatch({
-  type: "user/modify",
+store.dispatch({
+  type: addModelTypes.add,
   payload: {
-    name: "synccheng",
-  },
+    addNum: 5
+  }
 });
 
-console.log(app);
+store.dispatch({
+  type: addModelTypes.getNum,
+  payload: {}
+});
+
+store.dispatch({
+  type: userModelTypes.modify,
+  payload: {
+    name: "synccheng"
+  }
+});
+
+// console.log(app);
+console.log(store.getState());
+console.log(store);

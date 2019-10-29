@@ -1,29 +1,65 @@
-import createStore from "./createStore";
-import combineReducer from "./combineReducer";
+import { createStore } from "./createStore";
+import { combineReducers as combineReducer } from "./combineReducer";
+
+function reduceReducers(...reducers) {
+  return (previous, current) =>
+    reducers.reduce((p, r) => r(p, current), previous);
+}
 
 class Genji {
   constructor() {
     this._units = [];
-    this._reducers = [];
     this._states = {};
+    this._reducers = {};
   }
 
   unit(unit) {
     this._units.push(unit);
+    const types = {};
+    Object.keys(unit.reducers).map(
+      key => (types[key] = `${unit.namespace}/${key}`)
+    );
+    return types;
   }
 
   start() {
     // 注册所有的state与reducers
-    for (let i = 0; i < this._units.length; i) {
-      this._states[this._units[i].namespace] = {
-        ...this._units[i].state,
+    for (let i = 0; i < this._units.length; i++) {
+      const currentUnit = this._units[i];
+      this._states[currentUnit.namespace] = {
+        ...currentUnit.state
       };
-      Reflect.ownKeys(this._units[i].reducers).forEach(key => {
-        this._reducers.push(this._units[i].reducers[key]);
-      });
     }
+    const initialState = this._states;
+    for (let i = 0; i < this._units.length; i++) {
+      const currentUnit = this._units[i];
+      const tmpReducers = [];
+      Reflect.ownKeys(currentUnit.reducers).map(key => {
+        const oldReducer = currentUnit.reducers[key];
+        const newReducer = (state = initialState, action) => {
+          if (action.type !== `${currentUnit.namespace}/${key}`) return state;
+          return oldReducer(state, action);
+        };
+        tmpReducers.push(newReducer);
+      });
+      const finalReducers = reduceReducers(...tmpReducers);
+      this._reducers[currentUnit.namespace] = finalReducers;
+    }
+
     const rootReducer = combineReducer(this._reducers);
-    this._store = createStore(rootReducer, this._states);
+    this._store = createStore(rootReducer, initialState);
+    //劫持 store
+    const store = this._store;
+    let oldDispatch = store.dispatch;
+    store.dispatch = action => {
+      //@todo
+      // console.log("proxy dispatch");
+      oldDispatch(action);
+    };
+  }
+
+  getStore() {
+    return this._store;
   }
 }
 
