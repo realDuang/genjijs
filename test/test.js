@@ -16,6 +16,24 @@ const addModel = {
         num: state.num
       };
     }
+  },
+  effects: {
+    async addAsync(dispatch) {
+      return fetch('/test')
+        .then(response => {
+          dispatch({
+            type: addModelTypes.add,
+            payload: {
+              addNum: 10
+            }
+          });
+          return response.json();
+        })
+        .catch(e => {
+          console.log(e);
+        });
+    },
+    async getNumAsync() {}
   }
 };
 
@@ -65,6 +83,10 @@ store.dispatch({
   }
 });
 
-// console.log(app);
-console.log(store.getState());
-console.log(store);
+(async () => {
+  const result = await store.dispatch({
+    type: addModelTypes.addAsync
+  });
+  console.log(result);
+  console.log(store.getState());
+})();

@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const apiMocker = require('webpack-api-mocker');
 
 module.exports = {
   mode: 'development',
@@ -10,6 +11,9 @@ module.exports = {
   },
   devtool: 'eval',
   devServer: {
+    before(app) {
+      apiMocker(app, path.resolve('mock/api.js'));
+    },
     contentBase: path.resolve(__dirname, '..', 'dist'),
     compress: true,
     port: 8083
