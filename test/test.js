@@ -1,3 +1,8 @@
+import Genji from '../src/index';
+import React from 'react';
+import { render } from 'react-dom';
+import { Provider, connect } from 'react-redux';
+
 const addModel = {
   namespace: 'number',
   state: {
@@ -53,7 +58,7 @@ const userModel = {
     }
   }
 };
-import Genji from '../src/index';
+
 const app = new Genji();
 const addModelTypes = app.unit(addModel);
 const userModelTypes = app.unit(userModel);
@@ -61,6 +66,31 @@ const userModelTypes = app.unit(userModel);
 app.start();
 
 const store = app.getStore();
+
+const App = connect(
+  state => state,
+  dispatch => {
+    return {
+      add: () => {
+        dispatch({
+          type: addModelTypes.add,
+          payload: {
+            addNum: 1
+          }
+        });
+      }
+    };
+  }
+)(props => {
+  return <div onClick={props.add}>{props.number.num}</div>;
+});
+
+render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('app')
+);
 
 store.dispatch({
   type: addModelTypes.add,
