@@ -2,7 +2,7 @@ let path = require('path');
 let HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: { test: './test/test.js' },
+  entry: { test: './test/' },
   output: { filename: '[name].js', path: path.resolve('dist') },
   mode: 'development',
   module: {

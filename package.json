@@ -4,7 +4,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:test": "webpack --config webpack/webpack.config.test.js",
     "dev:test": "webpack-dev-server --open --config webpack/webpack.config.test.js",
-    "dev": "webpack-dev-server",
+    "dev": "npm run dev:test",
     "build": "webpack"
   },
   "version": "0.0.1",
@@ -35,7 +35,6 @@
   "dependencies": {
     "@babel/cli": "^7.6.4",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
-    "@babel/plugin-proposal-decorators": "^7.6.0",
     "@babel/plugin-proposal-export-default-from": "^7.5.2",
     "@babel/plugin-transform-runtime": "^7.6.2",
     "@babel/polyfill": "^7.6.0",
