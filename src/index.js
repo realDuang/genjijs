@@ -1,5 +1,4 @@
-import { createStore, applyMiddleware } from './createStore';
-import { combineReducers as combineReducer } from './combineReducer';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
 
 function reduceReducers(...reducers) {
@@ -18,7 +17,7 @@ class Genji {
     this._units.push(unit);
     const types = {};
     Object.keys(unit.reducers).map(key => (types[key] = `${unit.namespace}/${key}`));
-    Object.keys(unit.effects || {}).map(key => (types[key] = `#${unit.namespace}/${key}`));
+    Object.keys(unit.effects || {}).map(key => (types[key] = `*${unit.namespace}/${key}`));
     return types;
   }
 
@@ -42,14 +41,14 @@ class Genji {
         const oldReducer = currentUnit.reducers[key];
         const newReducer = (state = initialState, action) => {
           if (action.type !== `${currentUnit.namespace}/${key}`) return state;
-          return oldReducer(state, action);
+          return { ...state, ...oldReducer(state, action) };
         };
         tmpReducers.push(newReducer);
       });
       const finalReducers = reduceReducers(...tmpReducers);
       this._reducers[currentUnit.namespace] = finalReducers;
     }
-    const rootReducer = combineReducer(this._reducers);
+    const rootReducer = combineReducers(this._reducers);
     this._store = createStore(rootReducer, initialState, applyMiddleware(thunk));
 
     //注册effects
@@ -60,7 +59,7 @@ class Genji {
         //@todo effects 重复提示
         //@todo reducer 和 effect 不能重名
         this._effects.push({
-          type: `#${currentUnit.namespace}/${key}`,
+          type: `*${currentUnit.namespace}/${key}`,
           actionCreator: currentUnit.effects[key]
         });
       });
