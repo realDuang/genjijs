@@ -9,7 +9,7 @@
   },
   "version": "0.0.1",
   "description": "探索更好的数据状态管理方式",
-  "main": "test.js",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kelekexiao123/genjijs.git"

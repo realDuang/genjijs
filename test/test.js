@@ -11,15 +11,11 @@ const addModel = {
   reducers: {
     add(state, { payload, type }) {
       console.log(`answer ${state.num + payload.addNum}`);
-      return {
-        num: state.num + payload.addNum
-      };
+      return { ...state, num: state.num + payload.addNum };
     },
     getNum(state, action) {
       console.log(`getNum ${state.num}`);
-      return {
-        num: state.num
-      };
+      return { ...state, num: state.num };
     }
   },
   effects: {
@@ -45,23 +41,21 @@ const addModel = {
 const userModel = {
   namespace: 'user',
   state: {
-    name: ''
+    name: 'richirhuang'
   },
   reducers: {
     modify(state, { payload }) {
       if (!payload) return state;
       const { name } = payload;
       console.log(`change name ${name}`);
-      return {
-        name
-      };
+      return { ...state, name };
     }
   }
 };
 
-const app = new Genji();
-const addModelTypes = app.unit(addModel);
-const userModelTypes = app.unit(userModel);
+const app = new Genji({ injectEffectLoading: true, autoUpdateEffectLoading: true });
+const addModelTypes = app.model(addModel);
+const userModelTypes = app.model(userModel);
 
 app.start();
 
@@ -78,11 +72,33 @@ const App = connect(
             addNum: 1
           }
         });
+      },
+      addAsync: () => {
+        dispatch({
+          type: addModelTypes.addAsync,
+          payload: {
+            addNum: 10
+          }
+        });
+      },
+      modifyName: () => {
+        dispatch({
+          type: userModelTypes.modify,
+          payload: {
+            name: 'synccheng'
+          }
+        });
       }
     };
   }
 )(props => {
-  return <div onClick={props.add}>{props.number.num}</div>;
+  return (
+    <div>
+      <div onClick={props.add}>action test:{props.number.num}(click me)</div>
+      <div onClick={props.addAsync}>effect test:{props.number.num}(click me)</div>
+      <div onClick={props.modifyName}>name:{props.user.name}(click me)</div>
+    </div>
+  );
 });
 
 render(
@@ -92,31 +108,6 @@ render(
   document.getElementById('app')
 );
 
-store.dispatch({
-  type: addModelTypes.add,
-  payload: {
-    addNum: 1
-  }
+store.subscribe(() => {
+  console.log(JSON.stringify(store.getState()));
 });
-
-store.dispatch({
-  type: addModelTypes.add,
-  payload: {
-    addNum: 1
-  }
-});
-
-store.dispatch({
-  type: userModelTypes.modify,
-  payload: {
-    name: 'synccheng'
-  }
-});
-
-(async () => {
-  const result = await store.dispatch({
-    type: addModelTypes.addAsync
-  });
-  console.log(result);
-  console.log(store.getState());
-})();
