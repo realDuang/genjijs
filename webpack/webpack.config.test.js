@@ -4,7 +4,7 @@ const apiMocker = require('webpack-api-mocker');
 
 module.exports = {
   mode: 'development',
-  entry: './test/test.js',
+  entry: './test/',
   output: {
     filename: 'dist.js',
     path: path.resolve(__dirname, '..', 'dist')

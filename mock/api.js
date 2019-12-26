@@ -1,13 +1,18 @@
 const fs = require('fs');
 
 function fromJSONFile() {
-  return (req, res) => {
-    const data = fs.readFileSync('./test/test.json').toString();
+  return async (req, res) => {
+    const data = fs.readFileSync('mock/mock.json').toString();
     const json = JSON.parse(data);
+    await new Promise(resolve => {
+      setTimeout(() => {
+        resolve();
+      }, 2000);
+    });
     return res.json(json);
   };
 }
 const proxy = {
-  'GET /test': fromJSONFile()
+  'GET /mock': fromJSONFile()
 };
 module.exports = proxy;

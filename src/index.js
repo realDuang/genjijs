@@ -1,5 +1,4 @@
-import { createStore, applyMiddleware } from './createStore';
-import { combineReducers as combineReducer } from './combineReducer';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
 
 function reduceReducers(...reducers) {
@@ -72,7 +71,7 @@ class Genji {
             tmpReducers.push((state = initialState[currentmodel.namespace], action) => {
               if (action.type !== `${currentmodel.namespace}/${loadingKey}`) return state;
               state[loadingKey] = action.payload[loadingKey];
-              return state;
+              return { ...state };
             });
           }
         });
@@ -82,7 +81,7 @@ class Genji {
       this._reducers[currentmodel.namespace] = finalReducers;
     }
 
-    const rootReducer = combineReducer(this._reducers);
+    const rootReducer = combineReducers(this._reducers);
     this._store = createStore(rootReducer, initialState, applyMiddleware(thunk));
 
     //劫持 store
