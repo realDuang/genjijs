@@ -13,6 +13,8 @@ const getTypeTokensFromEffectType = effectType => {
   return effectType.split('/');
 };
 
+const ERROR_PREFIX = 'GENJI say:';
+
 class Genji {
   constructor(config = {}) {
     this._models = [];
@@ -44,22 +46,33 @@ class Genji {
     for (let i = 0; i < this._models.length; i++) {
       const currentmodel = this._models[i];
       const tmpReducers = [];
+      const reducerExist = key => {
+        if (!currentmodel.reducers) return false;
+        return Reflect.ownKeys(currentmodel.reducers).filter(reducerKey => reducerKey === key).length > 0;
+      };
+      const effectExist = key => {
+        if (!currentmodel.effects) return false;
+        return Reflect.ownKeys(currentmodel.effects).filter(effectKey => effectKey === key).length > 0;
+      };
       Reflect.ownKeys(currentmodel.reducers).map(key => {
-        //@todo reducers 重复提示
-        //@todo reducer 和 effect 不能重名
+        const reducerFounded = effectExist(key);
+        if (reducerFounded) {
+          throw new Error(`${ERROR_PREFIX} reducer ${`"${key}"`} conflict with effect ${`"${key}"`}`);
+        }
         const oldReducer = currentmodel.reducers[key];
         const newReducer = (state = initialState[currentmodel.namespace], action) => {
           if (action.type !== `${currentmodel.namespace}/${key}`) return state;
-          return oldReducer(state, action);
+          return { ...state, ...oldReducer(state, action) };
         };
         tmpReducers.push(newReducer);
       });
 
-      // const currentmodel = this._models[i];
       if (currentmodel.effects) {
         Reflect.ownKeys(currentmodel.effects).map(key => {
-          //@todo effects 重复提示
-          //@todo reducer 和 effect 不能重名
+          const effectFounded = reducerExist(key);
+          if (effectFounded) {
+            throw new Error(`${ERROR_PREFIX} reducer ${key} conflict with effect ${key}`);
+          }
           this._effects.push({
             type: `${currentmodel.namespace}/${key}`,
             actionCreator: currentmodel.effects[key]
@@ -121,14 +134,6 @@ class Genji {
 
   getStore() {
     return this._store;
-  }
-
-  replaceModel() {
-    //@todo
-  }
-
-  uninstall() {
-    //@todo
   }
 }
 

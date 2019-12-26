@@ -8,14 +8,12 @@ const numberUnit = {
     add(state, { payload, type }) {
       console.log(`answer ${state.num + payload.addNum}`);
       return {
-        ...state,
         num: state.num + payload.addNum
       };
     },
     getNum(state, action) {
       console.log(`getNum ${state.num}`);
       return {
-        ...state,
         num: state.num
       };
     }
