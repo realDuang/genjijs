@@ -1,5 +1,5 @@
 {
-  "name": "genjijs",
+  "name": "genji",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:test": "webpack --config webpack/webpack.config.test.js",
@@ -14,7 +14,7 @@
     "type": "git",
     "url": "git+https://github.com/kelekexiao123/genjijs.git"
   },
-  "author": "synccheng,huangruichang",
+  "author": "kelekexiao123,huangruichang",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/kelekexiao123/genjijs/issues"
