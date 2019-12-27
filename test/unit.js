@@ -12,23 +12,23 @@ const numberUnit = {
       };
     },
     getNum(state, action) {
-      console.log(`getNum ${state.num}`);
       return {
         num: state.num
       };
     }
   },
   effects: {
-    async addAsync(dispatch, getState) {
+    async addAsync(dispatch, getState, { save }) {
       return fetch('/mock')
         .then(response => {
-          dispatch({
-            // @todo 该位置的type只能取字符串
-            type: 'number/add',
-            payload: {
-              addNum: 10
-            }
-          });
+          save({ addNum: 10 }, 'number', 'addAsync');
+          // dispatch({
+          //   // @todo 该位置的type只能取字符串
+          //   type: 'number/add',
+          //   payload: {
+          //     addNum: 10
+          //   }
+          // });
           return response.json();
         })
         .catch(e => {

@@ -1,4 +1,4 @@
-import { createStore, applyMiddleware, combineReducers } from 'redux';
+import { createStore, applyMiddleware, combineReducers, compose } from 'redux';
 import thunk from 'redux-thunk';
 
 function reduceReducers(...reducers) {
@@ -13,7 +13,7 @@ const getTypeTokensFromEffectType = effectType => {
   return effectType.split('/');
 };
 
-const ERROR_PREFIX = 'GENJI say:';
+const ERROR_PREFIX = 'GENJI says:';
 
 class Genji {
   constructor(config = {}) {
@@ -94,41 +94,72 @@ class Genji {
       this._reducers[currentmodel.namespace] = finalReducers;
     }
 
-    const rootReducer = combineReducers(this._reducers);
-    this._store = createStore(rootReducer, initialState, applyMiddleware(thunk));
+    // 异步注入ruducer
+    const _genji = this;
+    const injectReducer = ({ type, reducer }) => {
+      const [namespace, effects] = getTypeTokensFromEffectType(type);
+      if (_genji._reducers[namespace].hasOwnProperty(type)) return;
+      _genji._reducers[namespace][effects] = reducer;
+      _genji._store.replaceReducer(combineReducers(_genji._reducers));
+    };
 
-    //劫持 store
-    const store = this._store;
-    let oldDispatch = store.dispatch;
-    store.dispatch = action => {
-      //@todo
-      // console.log("proxy dispatch");
+    // @todo
+    // createReducer的定义可能有问题
+    const createReducer = (state = initialState, action) => {
+      if (!action) return state;
+      return {
+        ...state,
+        ...action.payload
+      };
+    };
+
+    // effect附加特性
+    const effectFeatures = {
+      // @todo
+      // namespace, funcName参数应该可以不传入
+      save: function(updateState, namespace, funcName) {
+        const type = `${namespace}/${funcName}Save`;
+        injectReducer({ type, reducer: createReducer() });
+        _genji._store.dispatch({ type, payload: updateState });
+      }
+    };
+
+    const middlewares = [thunk.withExtraArgument(effectFeatures)];
+    const enhancers = [];
+
+    const rootReducer = combineReducers(_genji._reducers);
+    _genji._store = createStore(rootReducer, initialState, compose(applyMiddleware(...middlewares), ...enhancers));
+
+    //劫持 dispatch
+    const oldDispatch = _genji._store.dispatch;
+    _genji._store.dispatch = action => {
       let foundedEffect;
-      this._effects.map(effect => {
+      _genji._effects.map(effect => {
         if (effect.type === action.type) {
           foundedEffect = effect;
         }
       });
-      if (foundedEffect) {
-        if (!this.config.autoUpdateEffectLoading) {
-          return oldDispatch(foundedEffect.actionCreator);
-        }
-        const tokens = getTypeTokensFromEffectType(foundedEffect.type);
-        const effect = tokens[1];
-        const loadingKey = getLoadingKey(effect);
-        const updateLoadingAction = toggle => ({
-          type: `${foundedEffect.type}Loading`,
-          payload: {
-            [loadingKey]: toggle
-          }
-        });
-        oldDispatch(updateLoadingAction(true));
-        return oldDispatch(foundedEffect.actionCreator).then(() => {
-          oldDispatch(updateLoadingAction(false));
-        });
+      if (!foundedEffect) {
+        oldDispatch(action);
+        return Promise.resolve();
       }
-      oldDispatch(action);
-      return Promise.resolve();
+      if (!_genji.config.autoUpdateEffectLoading) {
+        return oldDispatch(foundedEffect.actionCreator);
+      }
+      const tokens = getTypeTokensFromEffectType(foundedEffect.type);
+      const effect = tokens[1];
+      const loadingKey = getLoadingKey(effect);
+      const updateLoadingAction = toggle => ({
+        type: `${foundedEffect.type}Loading`,
+        payload: {
+          [loadingKey]: toggle
+        }
+      });
+      oldDispatch(updateLoadingAction(true));
+      return oldDispatch(foundedEffect.actionCreator).then(res => {
+        oldDispatch(updateLoadingAction(false));
+        return Promise.resolve();
+      });
     };
   }
 
