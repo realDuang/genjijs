@@ -23,6 +23,11 @@ const mapDispatchToProps = dispatch => {
           addNum: 10
         }
       });
+    },
+    saveAsync: () => {
+      dispatch({
+        type: unitTypes['numberUnit'].saveAsync
+      });
     }
   };
 };
@@ -33,9 +38,10 @@ export default connect(
 )(props => {
   async function getFileContent() {
     const result = await props.dispatch({
-      type: unitTypes['numberUnit'].addAsync
+      type: unitTypes['numberUnit'].saveAsync
     });
     console.log(result);
+    return result
   }
 
   useEffect(() => {

@@ -19,17 +19,29 @@ const numberUnit = {
   },
   effects: {
     async addAsync(dispatch, getState, { save }) {
-      return fetch('/mock')
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve();
+        }, 1000);
+      })
         .then(response => {
-          save({ addNum: 10 }, 'number', 'addAsync');
-          // dispatch({
-          //   // @todo 该位置的type只能取字符串
-          //   type: 'number/add',
-          //   payload: {
-          //     addNum: 10
-          //   }
-          // });
-          return response.json();
+          dispatch({
+            // @todo 该位置的type只能取字符串
+            type: 'number/add',
+            payload: {
+              addNum: 10
+            }
+          });
+        })
+        .catch(e => {
+          console.log('fetch error:', e);
+        });
+    },
+    async saveAsync(dispatch, getState, { save }) {
+      return fetch('/mock')
+        .then(response => response.json())
+        .then(data => {
+          save({ num: data.saveNum }, 'number', 'addAsync');
         })
         .catch(e => {
           console.log('fetch error:', e);

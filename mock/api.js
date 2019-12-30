@@ -7,7 +7,7 @@ function fromJSONFile() {
     await new Promise(resolve => {
       setTimeout(() => {
         resolve();
-      }, 2000);
+      }, 1000);
     });
     return res.json(json);
   };
