@@ -55,6 +55,11 @@ export default connect(
         {props.number.addAsyncLoading && <span>Loading...</span>}
         effect test:{props.number.num}(click me)
       </div>
+      <div onClick={() => {
+        props.dispatch({
+          type: unitTypes['numberUnit'].saveAsync
+        })
+      }}>save test(click me)</div>
     </div>
   );
 });

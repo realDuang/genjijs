@@ -17,6 +17,14 @@ const getTypeTokensFromEffectType = effectType => {
   return effectType.split('/');
 };
 
+const curry = function (fn) {
+  const args = [].slice.call(arguments, 1);
+  return function() {
+      const newArgs = args.concat([].slice.call(arguments));
+      return fn.apply(this, newArgs);
+  };
+};
+
 const ERROR_PREFIX = 'GENJI says:';
 
 class Genji {
@@ -126,7 +134,7 @@ class Genji {
     const effectFeatures = {
       // @todo
       // namespace, funcName参数应该可以不传入
-      save: function(updateState, namespace, funcName) {
+      save: function(namespace, funcName, updateState) {
         const type = `${namespace}/${funcName}Save`;
         injectReducer({ type, reducer: createReducer(namespace) });
         _genji._store.dispatch({ type, payload: updateState });
@@ -152,8 +160,14 @@ class Genji {
         oldDispatch(action);
         return Promise.resolve();
       }
+      const oldActionCreator = foundedEffect.actionCreator;
+      const [namespace, funcName] = getTypeTokensFromEffectType(action.type);
+      const newActionCreator = async (dispatch, getState, { save }) => {
+        const newSave = curry(save, namespace, funcName);
+        return oldActionCreator(dispatch, getState, { save: newSave });
+      }
       if (!_genji.config.autoUpdateEffectLoading) {
-        return oldDispatch(foundedEffect.actionCreator);
+        return oldDispatch(newActionCreator);
       }
       const tokens = getTypeTokensFromEffectType(foundedEffect.type);
       const effect = tokens[1];
@@ -165,7 +179,7 @@ class Genji {
         }
       });
       oldDispatch(updateLoadingAction(true));
-      return oldDispatch(foundedEffect.actionCreator).then(res => {
+      return oldDispatch(newActionCreator).then(res => {
         oldDispatch(updateLoadingAction(false));
         return Promise.resolve();
       });

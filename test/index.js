@@ -18,7 +18,3 @@ render(
   </Provider>,
   document.getElementById('app')
 );
-
-// store.subscribe(() => {
-//   console.log(JSON.stringify(store.getState()));
-// });

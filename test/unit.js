@@ -41,7 +41,7 @@ const numberUnit = {
       return fetch('/mock')
         .then(response => response.json())
         .then(data => {
-          save({ num: data.saveNum }, 'number', 'addAsync');
+          save({ num: data.saveNum });
         })
         .catch(e => {
           console.log('fetch error:', e);
