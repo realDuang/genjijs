@@ -12,7 +12,6 @@ const numberUnit = {
       };
     },
     getNum(state, action) {
-      console.log(`getNum ${state.num}`);
       return {
         num: state.num
       };
@@ -20,7 +19,11 @@ const numberUnit = {
   },
   effects: {
     async addAsync(dispatch, getState) {
-      return fetch('/mock')
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve();
+        }, 1000);
+      })
         .then(response => {
           dispatch({
             // @todo 该位置的type只能取字符串
@@ -29,7 +32,16 @@ const numberUnit = {
               addNum: 10
             }
           });
-          return response.json();
+        })
+        .catch(e => {
+          console.log('fetch error:', e);
+        });
+    },
+    async saveAsync(dispatch, getState, { save }) {
+      return fetch('/mock')
+        .then(response => response.json())
+        .then(data => {
+          save({ num: data.saveNum });
         })
         .catch(e => {
           console.log('fetch error:', e);

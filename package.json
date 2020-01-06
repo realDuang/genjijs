@@ -1,5 +1,7 @@
 {
   "name": "genji",
+  "npmName": "genji",
+  "tnpmName": "@tencent/genji",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:test": "webpack --config webpack/webpack.config.test.js",
@@ -7,9 +9,9 @@
     "dev": "npm run dev:test",
     "build": "webpack"
   },
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "探索更好的数据状态管理方式",
-  "main": "index.js",
+  "main": "src/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kelekexiao123/genjijs.git"

@@ -20,7 +20,7 @@ module.exports = {
       }
     ]
   },
-  devtool: 'eval',
+  devtool: 'inline-source-map',
   devServer: {
     before(app) {
       apiMocker(app, path.resolve('mock/api.js'));

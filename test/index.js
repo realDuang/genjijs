@@ -1,4 +1,5 @@
 import Genji from '../src/index';
+// import Genji from '@tencent/genji';
 import React from 'react';
 import { render } from 'react-dom';
 import { Provider } from 'react-redux';
@@ -8,7 +9,6 @@ import { registerUnit } from './unit.js';
 export const genji = new Genji({ injectEffectLoading: true, autoUpdateEffectLoading: true });
 export const unitTypes = registerUnit(genji);
 genji.start();
-console.log(unitTypes);
 
 const store = genji.getStore();
 
@@ -18,7 +18,3 @@ render(
   </Provider>,
   document.getElementById('app')
 );
-
-store.subscribe(() => {
-  console.log(JSON.stringify(store.getState()));
-});
