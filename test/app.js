@@ -36,30 +36,25 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(props => {
-  async function getFileContent() {
-    const result = await props.dispatch({
-      type: unitTypes['numberUnit'].saveAsync
-    });
-    console.log(result);
-    return result
-  }
-
   useEffect(() => {
-    getFileContent();
+    props.saveAsync();
   }, []);
 
   return (
     <div>
-      <div onClick={props.add}>action test:{props.number.num}(click me)</div>
-      <div onClick={props.addAsync}>
-        {props.number.addAsyncLoading && <span>Loading...</span>}
-        effect test:{props.number.num}(click me)
-      </div>
-      <div onClick={() => {
-        props.dispatch({
-          type: unitTypes['numberUnit'].saveAsync
-        })
-      }}>save test(click me)</div>
+      {props.number.saveAsyncLoading ? (
+        <div>Loading...</div>
+      ) : (
+        <div onClick={props.saveAsync}>init num from mock (click me)</div>
+      )}
+      <div onClick={props.add}>action test (click me)</div>
+      {props.number.addAsyncLoading ? (
+        <div>Loading...</div>
+      ) : (
+        <div onClick={props.addAsync}>effect test (click me)</div>
+      )}
+
+      <div>current number is: {props.number.num}</div>
     </div>
   );
 });

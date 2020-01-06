@@ -9,21 +9,19 @@ function reduceReducers(reducers) {
   return (previous, current) => reducers.reduce((p, r) => r(p, current), previous);
 }
 
-const getLoadingKey = effectType => {
-  return `${effectType}Loading`;
-};
-
-const getTypeTokensFromEffectType = effectType => {
-  return effectType.split('/');
-};
-
-const curry = function (fn) {
-  const args = [].slice.call(arguments, 1);
-  return function() {
-      const newArgs = args.concat([].slice.call(arguments));
-      return fn.apply(this, newArgs);
+function getTypeTokensFromActionType(actionType) {
+  const [namespace, funcName] = actionType.split('/');
+  return {
+    namespace,
+    funcName
   };
-};
+}
+
+function currying(fn, ...outerArgs) {
+  return function(...innerArgs) {
+    return fn.apply(this, [...outerArgs, ...innerArgs]);
+  };
+}
 
 const ERROR_PREFIX = 'GENJI says:';
 
@@ -34,12 +32,20 @@ class Genji {
     this._reducers = {};
     this._effects = [];
     this.config = config;
+    this._reducersTree = {};
   }
 
   model(model) {
+    if (!model.namespace) {
+      throw new Error(`${ERROR_PREFIX} namespace should be defined`);
+    }
+    if (this._models.find(m => m.namespace === model.namespace)) {
+      throw new Error(`${ERROR_PREFIX} namespace "${model.namespace}" should be unique`);
+    }
     this._models.push(model);
+
     const types = {};
-    Object.keys(model.reducers).map(key => (types[key] = `${model.namespace}/${key}`));
+    Object.keys(model.reducers || {}).map(key => (types[key] = `${model.namespace}/${key}`));
     Object.keys(model.effects || {}).map(key => (types[key] = `${model.namespace}/${key}`));
     return types;
   }
@@ -47,8 +53,6 @@ class Genji {
   start() {
     const _genji = this;
     const rootState = this._states;
-
-    const reducersTree = {};
 
     // 注册state
     for (let i = 0; i < _genji._models.length; i++) {
@@ -93,12 +97,12 @@ class Genji {
             type: `${curModel.namespace}/${key}`,
             actionCreator: curModel.effects[key]
           });
-          const loadingKey = getLoadingKey(key);
           //初始化loading
           if (this.config.injectEffectLoading) {
+            const loadingKey = `${key}Loading`;
             rootState[curModel.namespace][loadingKey] = false;
             const newReducer = (state = rootState[curModel.namespace], action) => {
-              if (action.type !== `${curModel.namespace}/${loadingKey}`) return state;
+              if (action.type !== `${curModel.namespace}/$$${key}Loading`) return state;
               state[loadingKey] = action.payload[loadingKey];
               return { ...state };
             };
@@ -106,36 +110,37 @@ class Genji {
           }
         });
       }
-      reducersTree[curModel.namespace] = tmpReducers;
+      _genji._reducersTree[curModel.namespace] = tmpReducers;
 
       const finalReducers = reduceReducers(tmpReducers);
       _genji._reducers[curModel.namespace] = finalReducers;
     }
 
-    // 异步注入ruducer
-    const injectReducer = ({ type, reducer }) => {
-      const [namespace, reducerName] = getTypeTokensFromEffectType(type);
-      const subReducersTree = reducersTree[namespace];
-      if (!subReducersTree || subReducersTree.hasOwnProperty(reducerName)) return;
-      subReducersTree[reducerName] = reducer;
+    // 创建新的reducer
+    function createReducer(namespace) {
+      return function(state = rootState[namespace], action) {
+        if (!action) return state;
+        return {
+          ...state,
+          ...action.payload
+        };
+      };
+    }
+
+    // 异步注入reducer
+    function injectReducer({ type, reducer }) {
+      const { namespace, funcName } = getTypeTokensFromActionType(type);
+      const subReducersTree = _genji._reducersTree[namespace];
+      if (!subReducersTree || subReducersTree.hasOwnProperty(funcName)) return;
+      subReducersTree[funcName] = reducer;
       _genji._reducers[namespace] = reduceReducers(subReducersTree);
       _genji._store.replaceReducer(combineReducers(_genji._reducers));
-    };
+    }
 
-    const createReducer = namespace => (state = rootState[namespace], action) => {
-      if (!action) return state;
-      return {
-        ...state,
-        ...action.payload
-      };
-    };
-
-    // effect附加特性
+    // effects附加特性
     const effectFeatures = {
-      // @todo
-      // namespace, funcName参数应该可以不传入
       save: function(namespace, funcName, updateState) {
-        const type = `${namespace}/${funcName}Save`;
+        const type = `${namespace}/$$${funcName}Save`;
         injectReducer({ type, reducer: createReducer(namespace) });
         _genji._store.dispatch({ type, payload: updateState });
       }
@@ -161,19 +166,21 @@ class Genji {
         return Promise.resolve();
       }
       const oldActionCreator = foundedEffect.actionCreator;
-      const [namespace, funcName] = getTypeTokensFromEffectType(action.type);
+
+      // 劫持effects附加特性
+      const { namespace, funcName } = getTypeTokensFromActionType(action.type);
       const newActionCreator = async (dispatch, getState, { save }) => {
-        const newSave = curry(save, namespace, funcName);
+        const newSave = currying(save, namespace, funcName);
         return oldActionCreator(dispatch, getState, { save: newSave });
-      }
+      };
+
+      // 注入更新loading操作
       if (!_genji.config.autoUpdateEffectLoading) {
         return oldDispatch(newActionCreator);
       }
-      const tokens = getTypeTokensFromEffectType(foundedEffect.type);
-      const effect = tokens[1];
-      const loadingKey = getLoadingKey(effect);
+      const loadingKey = `${funcName}Loading`;
       const updateLoadingAction = toggle => ({
-        type: `${foundedEffect.type}Loading`,
+        type: `${namespace}/$$${funcName}Loading`,
         payload: {
           [loadingKey]: toggle
         }

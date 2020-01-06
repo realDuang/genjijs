@@ -18,7 +18,7 @@ const numberUnit = {
     }
   },
   effects: {
-    async addAsync(dispatch, getState, { save }) {
+    async addAsync(dispatch, getState) {
       return new Promise(resolve => {
         setTimeout(() => {
           resolve();
