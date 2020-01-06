@@ -9,7 +9,7 @@
     "dev": "npm run dev:test",
     "build": "webpack"
   },
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "探索更好的数据状态管理方式",
   "main": "src/index.js",
   "repository": {
