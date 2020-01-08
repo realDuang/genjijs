@@ -76,7 +76,6 @@ const userUnit = {
         .then(response => response.json())
         .then(data => {
           save({ num: data.saveNum + pick('num', 'number') }, 'number');
-          console.log(getState());
         })
         .catch(e => {
           console.error('fetch error:', e);

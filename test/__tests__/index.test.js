@@ -118,10 +118,13 @@ test('save functions', () => {
   const store = app.getStore();
 
   expect(store.getState().count.num).toEqual(0);
+  expect(store.getState().user.num).toEqual(-1);
   store.dispatch({ type: 'count/save1000' });
   expect(store.getState().count.num).toEqual(1000);
+  expect(store.getState().user.num).toEqual(-1);
 
   expect(store.getState().count.desc).toEqual('');
+  expect(store.getState().user.desc).toEqual('');
   store.dispatch({ type: 'user/saveAnotherState' });
   expect(store.getState().count.desc).toEqual('from user');
   expect(store.getState().user.desc).toEqual('');

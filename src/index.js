@@ -121,6 +121,9 @@ class Genji {
     function createReducer(namespace) {
       return function(state = rootState[namespace], action) {
         if (!action) return state;
+        const { namespace: actionNamespace } = getTypeTokensFromActionType(action.type);
+        if (namespace !== actionNamespace) return state;
+
         return {
           ...state,
           ...action.payload
