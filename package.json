@@ -3,10 +3,8 @@
   "npmName": "genji",
   "tnpmName": "@tencent/genji",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build:test": "webpack --config webpack/webpack.config.test.js",
-    "dev:test": "webpack-dev-server --open --config webpack/webpack.config.test.js",
-    "dev": "npm run dev:test",
+    "test": "jest --config jest.config.js",
+    "dev": "webpack-dev-server --open --config webpack.config.dev.js",
     "build": "webpack"
   },
   "version": "0.1.0",
@@ -25,10 +23,12 @@
   "devDependencies": {
     "@babel/core": "^7.6.4",
     "@babel/preset-env": "^7.6.3",
+    "@testing-library/react": "^9.4.0",
     "babel-loader": "^8.0.6",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.7.0",
     "html-webpack-plugin": "^3.2.0",
+    "jest": "^24.9.0",
     "webpack": "^4.41.2",
     "webpack-api-mocker": "^1.7.6",
     "webpack-cli": "^3.3.9",
