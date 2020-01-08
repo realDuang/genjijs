@@ -28,6 +28,7 @@ const ERROR_PREFIX = 'GENJI says:';
 class Genji {
   constructor(config = {}) {
     this._models = [];
+    this._store = {};
     this._states = {};
     this._reducers = {};
     this._effects = [];
@@ -139,10 +140,45 @@ class Genji {
 
     // effects附加特性
     const effectFeatures = {
-      save: function(namespace, funcName, updateState) {
-        const type = `${namespace}/$$${funcName}Save`;
-        injectReducer({ type, reducer: createReducer(namespace) });
+      save: function(namespace, funcName, updateState, assignNamespace) {
+        let curNamespace = namespace;
+        if (assignNamespace && typeof assignNamespace === 'string') {
+          const curModel = _genji._models.find(model => model.namespace === assignNamespace);
+          if (!curModel) {
+            throw new Error(
+              `${ERROR_PREFIX} ${funcName} ERROR: namespace '${assignNamespace}' assigning in 'save' function is not exist`
+            );
+          }
+          if (curModel.namespace === curNamespace) {
+            console.warn(
+              `${ERROR_PREFIX} ${funcName} WARNING: namespace '${assignNamespace}' assigning in 'save' function is unnecessary`
+            );
+          }
+          curNamespace = assignNamespace;
+        }
+        const type = `${curNamespace}/$$${funcName}Save`;
+        injectReducer({ type, reducer: createReducer(curNamespace) });
         _genji._store.dispatch({ type, payload: updateState });
+      },
+
+      pick: function(namespace, funcName, stateKey, assignNamespace) {
+        let curNamespace = namespace;
+        if (assignNamespace && typeof assignNamespace === 'string') {
+          const curModel = _genji._models.find(model => model.namespace === assignNamespace);
+          if (!curModel) {
+            throw new Error(
+              `${ERROR_PREFIX} ${funcName} ERROR: namespace '${assignNamespace}' assigning in 'pick' function is not exist`
+            );
+          }
+          if (curModel.namespace === curNamespace) {
+            console.warn(
+              `${ERROR_PREFIX} ${funcName} WARNING: namespace '${assignNamespace}' assigning in 'pick' function is unnecessary`
+            );
+          }
+          curNamespace = assignNamespace;
+        }
+        const rootState = _genji.getStore().getState();
+        return rootState[curNamespace][stateKey];
       }
     };
 
@@ -169,9 +205,10 @@ class Genji {
 
       // 劫持effects附加特性
       const { namespace, funcName } = getTypeTokensFromActionType(action.type);
-      const newActionCreator = async (dispatch, getState, { save }) => {
+      const newActionCreator = async (dispatch, getState, { save, pick }) => {
         const newSave = currying(save, namespace, funcName);
-        return oldActionCreator(dispatch, getState, { save: newSave });
+        const newPick = currying(pick, namespace, funcName);
+        return oldActionCreator(dispatch, getState, { save: newSave, pick: newPick });
       };
 
       // 注入更新loading操作

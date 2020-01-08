@@ -6,7 +6,8 @@ jest.mock('../request');
 const countModel = {
   namespace: 'count',
   state: {
-    num: 0
+    num: 0,
+    desc: ''
   },
   reducers: {
     add(state, { payload }) {
@@ -16,7 +17,7 @@ const countModel = {
     }
   },
   effects: {
-    add100(dispatch) {
+    async add100(dispatch) {
       dispatch({
         type: 'count/add',
         payload: {
@@ -24,8 +25,8 @@ const countModel = {
         }
       });
     },
-    save1000(dispatch, getState, { save }) {
-      save({ num: 1000 })
+    async save1000(dispatch, getState, { save }) {
+      save({ num: 1000 });
     }
   }
 };
@@ -33,7 +34,9 @@ const countModel = {
 const userModel = {
   namespace: 'user',
   state: {
-    name: 'unnamed'
+    name: 'unnamed',
+    num: -1,
+    desc: ''
   },
   reducers: {
     setName(state, { payload }) {
@@ -52,6 +55,18 @@ const userModel = {
           }
         });
       });
+    },
+
+    async saveAnotherState(dispatch, getState, { save }) {
+      save({ desc: 'from user' }, 'count');
+    },
+
+    async getPickedState(dispatch, getState, { pick }) {
+      return pick('name');
+    },
+
+    async getAnotherPickedState(dispatch, getState, { pick }) {
+      return pick('num', 'count');
     }
   }
 };
@@ -95,11 +110,33 @@ test('injectLoading', () => {
   });
 });
 
-test('internal functions', () => {
+test('save functions', () => {
   const app = new Genji();
   app.model(countModel);
+  app.model(userModel);
   app.start();
-  expect(app.getStore().getState().count.num).toEqual(0);
-  app.getStore().dispatch({ type: 'count/save1000' });
-  expect(app.getStore().getState().count.num).toEqual(1000);
+  const store = app.getStore();
+
+  expect(store.getState().count.num).toEqual(0);
+  store.dispatch({ type: 'count/save1000' });
+  expect(store.getState().count.num).toEqual(1000);
+
+  expect(store.getState().count.desc).toEqual('');
+  store.dispatch({ type: 'user/saveAnotherState' });
+  expect(store.getState().count.desc).toEqual('from user');
+  expect(store.getState().user.desc).toEqual('');
+});
+
+test('pick functions', () => {
+  const app = new Genji();
+  app.model(countModel);
+  app.model(userModel);
+  app.start();
+  const store = app.getStore();
+
+  expect(store.getState().count.num).toEqual(0);
+  expect(store.getState().user.num).toEqual(-1);
+  expect(store.getState().user.name).toEqual('unnamed');
+  store.dispatch({ type: 'user/getPickedState' }).then(res => expect(res).toEqual('unnamed'));
+  store.dispatch({ type: 'user/getAnotherPickedState' }).then(res => expect(res).toEqual(0));
 });

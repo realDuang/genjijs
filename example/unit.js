@@ -6,7 +6,6 @@ const numberUnit = {
   },
   reducers: {
     add(state, { payload, type }) {
-      console.log(`answer ${state.num + payload.addNum}`);
       return {
         num: state.num + payload.addNum
       };
@@ -18,23 +17,27 @@ const numberUnit = {
     }
   },
   effects: {
-    async addAsync(dispatch, getState) {
+    async addAsync(dispatch, getState, { pick }) {
       return new Promise(resolve => {
         setTimeout(() => {
           resolve();
-        }, 1000);
+        }, 500);
       })
         .then(response => {
+          const prevNum = pick('num');
+          const otherName = pick('name', 'user');
+          console.log(prevNum, otherName);
           dispatch({
             // @todo 该位置的type只能取字符串
             type: 'number/add',
             payload: {
-              addNum: 10
+              addNum: Math.floor(prevNum / 2),
+              desc: otherName
             }
           });
         })
         .catch(e => {
-          console.log('fetch error:', e);
+          console.error('fetch error:', e);
         });
     },
     async saveAsync(dispatch, getState, { save }) {
@@ -44,7 +47,7 @@ const numberUnit = {
           save({ num: data.saveNum });
         })
         .catch(e => {
-          console.log('fetch error:', e);
+          console.error('fetch error:', e);
         });
     }
   }
@@ -53,7 +56,7 @@ const numberUnit = {
 const userUnit = {
   namespace: 'user',
   state: {
-    name: ''
+    name: 'zhangsan'
   },
   reducers: {
     modify(state, { payload }) {
@@ -63,6 +66,21 @@ const userUnit = {
       return {
         name
       };
+    }
+  },
+
+  effects: {
+    async saveOther(dispatch, getState, { save, pick }) {
+      console.log();
+      return fetch('/mock')
+        .then(response => response.json())
+        .then(data => {
+          save({ num: data.saveNum + pick('num', 'number') }, 'number');
+          console.log(getState());
+        })
+        .catch(e => {
+          console.error('fetch error:', e);
+        });
     }
   }
 };

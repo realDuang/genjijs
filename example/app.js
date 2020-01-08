@@ -28,6 +28,12 @@ const mapDispatchToProps = dispatch => {
       dispatch({
         type: unitTypes['numberUnit'].saveAsync
       });
+    },
+
+    saveOther: () => {
+      dispatch({
+        type: unitTypes['userUnit'].saveOther
+      });
     }
   };
 };
@@ -52,6 +58,12 @@ export default connect(
         <div>Loading...</div>
       ) : (
         <div onClick={props.addAsync}>effect test (click me)</div>
+      )}
+
+      {props.user.saveOtherLoading ? (
+        <div>Loading...</div>
+      ) : (
+        <div onClick={props.saveOther}>save num from other model (click me)</div>
       )}
 
       <div>current number is: {props.number.num}</div>
