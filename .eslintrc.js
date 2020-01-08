@@ -1,22 +1,23 @@
 module.exports = {
   extends: ['eslint:recommended'],
+  parser: 'babel-eslint',
   env: {
     browser: true,
     commonjs: true,
     es6: true,
     node: true,
+    jest: true
   },
 
   parserOptions: {
-    ecmaVersion: 2018,
     sourceType: 'module',
     ecmaFeatures: {
-      jsx: true,
-    },
+      jsx: true
+    }
   },
   root: true,
 
-  plugins: ['import'],
+  plugins: ['import', 'react'],
 
-  rules: {},
+  rules: { 'no-unused-vars': 0 }
 };

@@ -1,8 +1,10 @@
 import { createStore, applyMiddleware, combineReducers, compose } from 'redux';
 import thunk from 'redux-thunk';
 
+const ERROR_PREFIX = 'GENJI says:';
+
 function reduceReducers(reducers) {
-  if (!reducers instanceof Object || !reducers instanceof Array) throw Error('Can not reduce this type of reducers');
+  if (!(reducers instanceof Object || Array)) throw Error(`${ERROR_PREFIX} Can not reduce this type of reducers`);
   if (reducers instanceof Object) {
     reducers = Object.values(reducers);
   }
@@ -22,8 +24,6 @@ function currying(fn, ...outerArgs) {
     return fn.apply(this, [...outerArgs, ...innerArgs]);
   };
 }
-
-const ERROR_PREFIX = 'GENJI says:';
 
 class Genji {
   constructor(config = {}) {
@@ -135,7 +135,7 @@ class Genji {
     function injectReducer({ type, reducer }) {
       const { namespace, funcName } = getTypeTokensFromActionType(type);
       const subReducersTree = _genji._reducersTree[namespace];
-      if (!subReducersTree || subReducersTree.hasOwnProperty(funcName)) return;
+      if (!subReducersTree || Object.prototype.hasOwnProperty.call(subReducersTree, funcName)) return;
       subReducersTree[funcName] = reducer;
       _genji._reducers[namespace] = reduceReducers(subReducersTree);
       _genji._store.replaceReducer(combineReducers(_genji._reducers));
@@ -226,7 +226,7 @@ class Genji {
         }
       });
       oldDispatch(updateLoadingAction(true));
-      return oldDispatch(newActionCreator).then(res => {
+      return oldDispatch(newActionCreator).then(() => {
         oldDispatch(updateLoadingAction(false));
         return Promise.resolve();
       });
