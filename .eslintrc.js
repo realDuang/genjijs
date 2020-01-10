@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['eslint:recommended'],
+  extends: ['eslint:recommended', 'prettier'],
   parser: 'babel-eslint',
   env: {
     browser: true,
