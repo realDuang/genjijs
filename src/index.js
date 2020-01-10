@@ -193,7 +193,7 @@ class Genji {
 
     //劫持 dispatch
     const oldDispatch = _genji._store.dispatch;
-    _genji._store.dispatch = action => {
+    const newDispatch = action => {
       let foundedEffect;
       _genji._effects.map(effect => {
         if (effect.type === action.type) {
@@ -204,19 +204,19 @@ class Genji {
         oldDispatch(action);
         return Promise.resolve();
       }
-      const oldActionCreator = foundedEffect.actionCreator;
+      const genjiActionCreator = foundedEffect.actionCreator;
 
       // 劫持effects附加特性
       const { namespace, funcName } = getTypeTokensFromActionType(action.type);
-      const newActionCreator = async (dispatch, getState, { save, pick }) => {
+      const thunkActionCreator = async (dispatch, getState, { save, pick }) => {
         const newSave = currying(save, namespace, funcName);
         const newPick = currying(pick, namespace, funcName);
-        return oldActionCreator(dispatch, getState, { save: newSave, pick: newPick });
+        return genjiActionCreator(action, { dispatch, getState, save: newSave, pick: newPick });
       };
 
       // 注入更新loading操作
       if (!_genji.config.autoUpdateEffectLoading) {
-        return oldDispatch(newActionCreator);
+        return oldDispatch(thunkActionCreator);
       }
       const loadingKey = `${funcName}Loading`;
       const updateLoadingAction = toggle => ({
@@ -226,11 +226,12 @@ class Genji {
         }
       });
       oldDispatch(updateLoadingAction(true));
-      return oldDispatch(newActionCreator).then(() => {
+      return oldDispatch(thunkActionCreator).then(() => {
         oldDispatch(updateLoadingAction(false));
         return Promise.resolve();
       });
     };
+    _genji._store.dispatch = newDispatch;
   }
 
   getStore() {

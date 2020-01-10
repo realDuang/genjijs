@@ -7,26 +7,27 @@ const countModel = {
   namespace: 'count',
   state: {
     num: 0,
-    desc: ''
+    name: ''
   },
   reducers: {
     add(state, { payload }) {
       return {
-        num: state.num + payload.addNum
+        num: state.num + payload
       };
     }
   },
   effects: {
-    async add100(dispatch) {
+    async addEffect({ payload: value }, { dispatch }) {
       dispatch({
         type: 'count/add',
-        payload: {
-          addNum: 100
-        }
+        payload: value
       });
     },
-    async save1000(dispatch, getState, { save }) {
-      save({ num: 1000 });
+    async saveEffect({ payload: value }, { save }) {
+      save({ num: value });
+    },
+    async saveAnotherState(action, { save }) {
+      save({ name: 'from count model' }, 'user');
     }
   }
 };
@@ -35,8 +36,7 @@ const userModel = {
   namespace: 'user',
   state: {
     name: 'unnamed',
-    num: -1,
-    desc: ''
+    num: -1
   },
   reducers: {
     setName(state, { payload }) {
@@ -46,7 +46,7 @@ const userModel = {
     }
   },
   effects: {
-    async getNameAsync(dispatch) {
+    async getNameAsync(action, { dispatch }) {
       return user.getUserName(4).then(data => {
         dispatch({
           type: 'user/setName',
@@ -57,15 +57,11 @@ const userModel = {
       });
     },
 
-    async saveAnotherState(dispatch, getState, { save }) {
-      save({ desc: 'from user' }, 'count');
-    },
-
-    async getPickedState(dispatch, getState, { pick }) {
+    async getPickedState(action, { pick }) {
       return pick('name');
     },
 
-    async getAnotherPickedState(dispatch, getState, { pick }) {
+    async getAnotherPickedState(action, { pick }) {
       return pick('num', 'count');
     }
   }
@@ -76,7 +72,7 @@ test('reducers', () => {
   app.model(countModel);
   app.start();
   expect(app.getStore().getState().count.num).toEqual(0);
-  app.getStore().dispatch({ type: 'count/add', payload: { addNum: 1 } });
+  app.getStore().dispatch({ type: 'count/add', payload: 1 });
   expect(app.getStore().getState().count.num).toEqual(1);
 });
 
@@ -85,7 +81,7 @@ test('effects', () => {
   app.model(countModel);
   app.start();
   expect(app.getStore().getState().count.num).toEqual(0);
-  app.getStore().dispatch({ type: 'count/add100' });
+  app.getStore().dispatch({ type: 'count/addEffect', payload: 100 });
   expect(app.getStore().getState().count.num).toEqual(100);
 });
 
@@ -119,15 +115,15 @@ test('save functions', () => {
 
   expect(store.getState().count.num).toEqual(0);
   expect(store.getState().user.num).toEqual(-1);
-  store.dispatch({ type: 'count/save1000' });
+  store.dispatch({ type: 'count/saveEffect', payload: 1000 });
   expect(store.getState().count.num).toEqual(1000);
   expect(store.getState().user.num).toEqual(-1);
 
-  expect(store.getState().count.desc).toEqual('');
-  expect(store.getState().user.desc).toEqual('');
-  store.dispatch({ type: 'user/saveAnotherState' });
-  expect(store.getState().count.desc).toEqual('from user');
-  expect(store.getState().user.desc).toEqual('');
+  expect(store.getState().count.name).toEqual('');
+  expect(store.getState().user.name).toEqual('unnamed');
+  store.dispatch({ type: 'count/saveAnotherState' });
+  expect(store.getState().count.name).toEqual('');
+  expect(store.getState().user.name).toEqual('from count model');
 });
 
 test('pick functions', () => {
@@ -137,9 +133,11 @@ test('pick functions', () => {
   app.start();
   const store = app.getStore();
 
-  expect(store.getState().count.num).toEqual(0);
-  expect(store.getState().user.num).toEqual(-1);
+  expect(store.getState().count.name).toEqual('');
   expect(store.getState().user.name).toEqual('unnamed');
   store.dispatch({ type: 'user/getPickedState' }).then(res => expect(res).toEqual('unnamed'));
+
+  expect(store.getState().count.num).toEqual(0);
+  expect(store.getState().user.num).toEqual(-1);
   store.dispatch({ type: 'user/getAnotherPickedState' }).then(res => expect(res).toEqual(0));
 });

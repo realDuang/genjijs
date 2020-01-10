@@ -15,12 +15,12 @@ const countModel = {
   reducers: {
     add(state, { payload }) {
       return {
-        num: state.num + payload.addNum
+        num: state.num + payload
       };
     }
   },
   effects: {
-    async addAsync(dispatch) {
+    async addAsync({ payload: num }, { dispatch }) {
       return new Promise(resolve => {
         setTimeout(() => {
           resolve();
@@ -28,9 +28,7 @@ const countModel = {
       }).then(() => {
         dispatch({
           type: 'count/add',
-          payload: {
-            addNum: 10
-          }
+          payload: num
         });
       });
     }
@@ -52,17 +50,13 @@ test('connect', async () => {
       add: () => {
         dispatch({
           type: 'count/add',
-          payload: {
-            addNum: 1
-          }
+          payload: 1
         });
       },
       addAsync: () => {
         dispatch({
           type: 'count/addAsync',
-          payload: {
-            addNum: 10
-          }
+          payload: 10
         });
       }
     };

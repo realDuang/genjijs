@@ -11,17 +11,13 @@ const mapDispatchToProps = dispatch => {
     add: () => {
       dispatch({
         type: unitTypes['numberUnit'].add,
-        payload: {
-          addNum: 1
-        }
+        payload: 1
       });
     },
     addAsync: () => {
       dispatch({
         type: unitTypes['numberUnit'].addAsync,
-        payload: {
-          addNum: 10
-        }
+        payload: 10
       });
     },
     saveAsync: () => {
