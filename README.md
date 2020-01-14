@@ -1,2 +1,67 @@
-# genjijs
-探索更好的数据状态管理方式
+简体中文 | English(:construction:)
+
+# Genji
+
+[![CircleCI](https://circleci.com/gh/kelekexiao123/genjijs.svg?style=svg)](https://circleci.com/gh/kelekexiao123/genjijs)
+
+基于 `redux`、`redux-thunk` 的超轻量级（核心代码仅5KB）的数据状态管理方案。(Inspired by `dva` )
+
+---
+
+## 特性 :new:
+
+* 统一的 `model` 模块。使数据处理逻辑集中，方便数据统一管理。
+* 提供友好的存取数据的方法**save** & **pick**，通过自动生成 `reducer` 统一同步与异步更新 `state` 的操作体验。
+* 内置异步操作 `loading` 状态，更方便的获取当前操作进度。
+
+## 安装 :gear:
+
+在项目目录下，执行以下命令：
+
+```
+npm install --save genji
+```
+
+如果你使用yarn，也可以：
+```
+yarn add genji
+```
+
+## 快速上手 :beginner:
+
+本项目内置使用示例，见[这里](https://github.com/kelekexiao123/genjijs/tree/master/example)。使用了 `Genji` 的所有常用特性。
+
+另外，下面的 `demo` 也许能帮助你更快地熟悉 `genji` ：
+
+* [TodoList](https://codesandbox.io/s/reverent-galois-v5c8t?fontsize=14&hidenavigation=1&theme=dark)：一个模仿Redux官方给出的TodoList。（[Redux官网示例传送门](https://codesandbox.io/s/github/reduxjs/redux/tree/master/examples/todos)）
+
+---
+
+## Q & A
+
+* ### 与`dva`的区别？
+
+`dva`是一个在全球范围内都十分优秀的开源项目，也是本项目的灵感来源（这从项目名上就可以看出hhh），再此特别致谢。
+
+在 `dva` 项目中使用了 `redux-saga` 作为异步解决方案，这使得开发者不得不使用 `generator` 的方式进行异步请求，这和 `async` 与 `Promise` 结合的主流异步调用方式不同，可能会对新手开发者造成一些困惑。因此，在 `Genji` 中采用了 `Redux` 的作者 `Dan` 本人写的 `redux-thunk` 作为异步解决方案。
+
+考虑到 `redux-saga` 所带来的用户习惯与功能增强，我们通过劫持注入的方式增强了 `redux-thunk` 的能力，从而使用户以使用类 `redux-saga` 的方式无感知的定义异步函数，并支持 `async` 与 `Promise` 方式触发异步请求。
+
+## TODO :construction:
+
+- [x] 异步函数 `loading` 状态注入
+- [x] 为effects加入 `save` 与 `pick` 方法进行对 `state` 存取的能力
+  - [x] 异步创建 `reducer` 并注入到原 `reducer树` 中
+  - [x] 扩展 `redux-thunk` ，并劫持`dispatch`，扩展参数注入
+  - [x] 实现 `save` 与 `pick` 功能
+  - [x] 将功能作用范围扩展到对其他 `model` 中 `state` 的存取
+- [x] 加入CI、eslint、单元测试功能
+
+- [ ] 整合`reducers` 与 `effects`, 统一为 `operation` 操作
+- [ ] 改写`Aciton Type`，使之支持定义跳转
+
+## 开源许可证
+
+[MIT](https://github.com/kelekexiao123/genjijs/blob/master/LICENSE)
+
+（你可以随意使用此项目，不需要提前告知我，除非你需要其它服务。）

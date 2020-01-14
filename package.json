@@ -13,7 +13,7 @@
     "lint:prettier": "prettier --check \"{app,example,mock,test}/**/*.{js,jsx,ts,tsx}\"",
     "fix:prettier": "prettier --write \"{app,example,mock,test}/**/*.{js,jsx,ts,tsx}\""
   },
-  "version": "0.1.0",
+  "version": "0.0.2",
   "description": "探索更好的数据状态管理方式",
   "main": "src/index.js",
   "repository": {
