@@ -1,10 +1,19 @@
 简体中文 | English(:construction:)
+# <img src="https://user-images.githubusercontent.com/17807197/72414887-3b7b6080-37ae-11ea-87db-d350efb54a8e.png" width="28" height="28" align="center" style="margin-right: 5px" /> Genji
 
-# Genji
-
+[![npm version](https://img.shields.io/npm/v/genjijs.svg)](https://www.npmjs.com/package/genjijs)
 [![CircleCI](https://circleci.com/gh/kelekexiao123/genjijs.svg?style=svg)](https://circleci.com/gh/kelekexiao123/genjijs)
+[![dependencies Status](https://david-dm.org/kelekexiao123/genjijs/status.svg)](https://david-dm.org/kelekexiao123/genjijs)
+[![devDependencies Status](https://david-dm.org/kelekexiao123/genjijs/dev-status.svg)](https://david-dm.org/kelekexiao123/genjijs?type=dev)
+[![downloads](https://img.shields.io/npm/dm/genjijs.svg)](https://npmcharts.com/compare/genjijs?minimal=true)
 
-基于 `redux`、`redux-thunk` 的超轻量级（核心代码仅5KB）的数据状态管理方案。(Inspired by `dva` )
+基于 `redux`、`redux-thunk` 的超轻量级（核心代码仅5KB）的数据状态管理方案。(Inspired by [dva](https://github.com/dvajs/dva) )
+
+---
+
+<img src="https://user-images.githubusercontent.com/17807197/72416259-3835a400-37b1-11ea-91ed-0ca72d361802.gif" width="300" />
+
+> 竜神の剣を喰らえ！ -- 島田源氏
 
 ---
 
@@ -37,7 +46,7 @@ yarn add genji
 
 ---
 
-## Q & A
+## Q & A :book:
 
 * ### 与`dva`的区别？
 

@@ -14,14 +14,20 @@
     "fix:prettier": "prettier --write \"{app,example,mock,test}/**/*.{js,jsx,ts,tsx}\""
   },
   "version": "0.1.0",
-  "description": "探索更好的数据状态管理方式",
+  "description": "Explore a better way to manage data state",
   "main": "src/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kelekexiao123/genjijs.git"
   },
   "author": "kelekexiao123,huangruichang",
-  "license": "ISC",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "redux",
+    "dva",
+    "redux-thunk"
+  ],
   "bugs": {
     "url": "https://github.com/kelekexiao123/genjijs/issues"
   },
