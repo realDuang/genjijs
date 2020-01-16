@@ -1,22 +1,18 @@
 const numberUnit = {
   namespace: 'number',
   state: {
-    num: 0
-  },
-  reducers: {
-    add(state, { payload, type }) {
-      return {
-        num: state.num + payload
-      };
-    },
-    getNum(state, action) {
-      return {
-        num: state.num
-      };
+    num: 0,
+    desc: {
+      num: 0
     }
   },
-  effects: {
-    async addAsync({ type, payload: value }, { dispatch, getState, pick, save }) {
+
+  actionCreators: {
+    add({ type, payload }, { getState, pick, save }) {
+      const num = pick('num');
+      save({ num: num + payload });
+    },
+    async addAsync({ type, payload: value }, { getState, pick, save }) {
       return new Promise(resolve => {
         setTimeout(() => {
           resolve();
@@ -26,21 +22,18 @@ const numberUnit = {
           const prevNum = pick('num');
           const otherName = pick('name', 'user');
           console.log(prevNum, otherName);
-          dispatch({
-            // @todo 该位置的type只能取字符串
-            type: 'number/add',
-            payload: value + Math.floor(prevNum / 2)
-          });
+          save({ num: value + prevNum });
         })
         .catch(e => {
           console.error('fetch error:', e);
         });
     },
-    async saveAsync(action, { dispatch, getState, pick, save }) {
+    async saveAsync(action, { getState, pick, save }) {
       return fetch('/mock')
         .then(response => response.json())
         .then(data => {
           save({ num: data.saveNum });
+          save({ desc: { num: data.saveNum } });
         })
         .catch(e => {
           console.error('fetch error:', e);
@@ -52,20 +45,12 @@ const numberUnit = {
 const userUnit = {
   namespace: 'user',
   state: {
-    name: 'zhangsan'
-  },
-  reducers: {
-    modify(state, { payload }) {
-      if (!payload) return state;
-      const { name } = payload;
-      return {
-        name
-      };
-    }
+    name: 'zhangsan',
+    num: 0
   },
 
-  effects: {
-    async saveOther(action, { dispatch, getState, pick, save }) {
+  actionCreators: {
+    async saveOther(action, { getState, pick, save }) {
       return fetch('/mock')
         .then(response => response.json())
         .then(data => {

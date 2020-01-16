@@ -4,8 +4,12 @@ import thunk from 'redux-thunk';
 const ERROR_PREFIX = 'GENJI says:';
 
 function reduceReducers(reducers) {
-  if (!(reducers instanceof Object || Array)) throw Error(`${ERROR_PREFIX} Can not reduce this type of reducers`);
-  if (reducers instanceof Object) {
+  if (
+    Object.prototype.toString.call(reducers) !== '[object Array]' &&
+    Object.prototype.toString.call(reducers) !== '[object Object]'
+  )
+    throw Error(`${ERROR_PREFIX} Can not reduce this type of reducers`);
+  if (Object.prototype.toString.call(reducers) === '[object Object]') {
     reducers = Object.values(reducers);
   }
   return (previous, current) => reducers.reduce((p, r) => r(p, current), previous);
@@ -31,7 +35,7 @@ class Genji {
     this._store = {};
     this._states = {};
     this._reducers = {};
-    this._effects = [];
+    this._actionCreatorObjs = [];
     this.config = config;
     this._reducersTree = {};
   }
@@ -47,7 +51,7 @@ class Genji {
 
     const types = {};
     Object.keys(model.reducers || {}).map(key => (types[key] = `${model.namespace}/${key}`));
-    Object.keys(model.effects || {}).map(key => (types[key] = `${model.namespace}/${key}`));
+    Object.keys(model.actionCreators || {}).map(key => (types[key] = `${model.namespace}/${key}`));
     return types;
   }
 
@@ -66,49 +70,57 @@ class Genji {
     // 注册reducers
     for (let i = 0; i < _genji._models.length; i++) {
       const curModel = _genji._models[i];
-      const tmpReducers = {};
+      const tmpReducers = {
+        // 为每个 model 默认注入 '$$save' reducer
+        $$save: createReducer(curModel.namespace)
+      };
+
       const reducerExist = key => {
         if (!curModel.reducers) return false;
-        return Reflect.ownKeys(curModel.reducers).filter(reducerKey => reducerKey === key).length > 0;
+        return Reflect.ownKeys(curModel.reducers).some(reducerKey => reducerKey === key);
       };
-      const effectExist = key => {
-        if (!curModel.effects) return false;
-        return Reflect.ownKeys(curModel.effects).filter(effectKey => effectKey === key).length > 0;
+      const actionCreatorsExist = key => {
+        if (!curModel.actionCreators) return false;
+        return Reflect.ownKeys(curModel.actionCreators).some(actionCreatorsKey => actionCreatorsKey === key);
       };
-      Reflect.ownKeys(curModel.reducers).map(key => {
-        const reducerFounded = effectExist(key);
-        if (reducerFounded) {
-          throw new Error(`${ERROR_PREFIX} reducer ${`"${key}"`} conflict with effect ${`"${key}"`}`);
-        }
-        const oldReducer = curModel.reducers[key];
-        const newReducer = (state = rootState[curModel.namespace], action) => {
-          if (action.type !== `${curModel.namespace}/${key}`) return state;
-          return { ...state, ...oldReducer(state, action) };
-        };
-        tmpReducers[key] = newReducer;
-      });
-      tmpReducers['$$save'] = createReducer(curModel.namespace);
 
-      if (curModel.effects) {
-        Reflect.ownKeys(curModel.effects).map(key => {
-          const effectFounded = reducerExist(key);
-          if (effectFounded) {
-            throw new Error(`${ERROR_PREFIX} reducer ${key} conflict with effect ${key}`);
+      if (curModel.reducers) {
+        Reflect.ownKeys(curModel.reducers).map(reducerName => {
+          const reducerNameFounded = actionCreatorsExist(reducerName);
+          if (reducerNameFounded) {
+            throw new Error(`${ERROR_PREFIX} function name ${`"${reducerName}"`} are both in reducer & actionCreator.`);
           }
-          _genji._effects.push({
-            type: `${curModel.namespace}/${key}`,
-            actionCreator: curModel.effects[key]
+          const oldReducer = curModel.reducers[reducerName];
+          const newReducer = (state = rootState[curModel.namespace], action) => {
+            if (action.type !== `${curModel.namespace}/${reducerName}`) return state;
+            return { ...state, ...oldReducer(state, action) };
+          };
+          tmpReducers[reducerName] = newReducer;
+        });
+      }
+
+      if (curModel.actionCreators) {
+        Reflect.ownKeys(curModel.actionCreators).map(actionCreatorName => {
+          const actionCreatorNameFounded = reducerExist(actionCreatorName);
+          if (actionCreatorNameFounded) {
+            throw new Error(
+              `${ERROR_PREFIX} function name ${`"${actionCreatorName}"`} are both in reducer & actionCreator.`
+            );
+          }
+          _genji._actionCreatorObjs.push({
+            type: `${curModel.namespace}/${actionCreatorName}`,
+            actionCreator: curModel.actionCreators[actionCreatorName]
           });
-          //初始化loading
-          if (this.config.injectEffectLoading) {
-            const loadingKey = `${key}Loading`;
+          // 注入操作 loading 的 reducer
+          if (this.config.injectAsyncLoading) {
+            const loadingKey = `${actionCreatorName}Loading`;
             rootState[curModel.namespace][loadingKey] = false;
             const newReducer = (state = rootState[curModel.namespace], action) => {
-              if (action.type !== `${curModel.namespace}/$$${key}Loading`) return state;
+              if (action.type !== `${curModel.namespace}/$$${actionCreatorName}Loading`) return state;
               state[loadingKey] = action.payload[loadingKey];
               return { ...state };
             };
-            tmpReducers[key] = newReducer;
+            tmpReducers[actionCreatorName] = newReducer;
           }
         });
       }
@@ -132,8 +144,8 @@ class Genji {
       };
     }
 
-    // effects附加特性
-    const effectFeatures = {
+    // actionCreator附加特性
+    const actionCreatorFeatures = {
       save: function(namespace, funcName, updateState, assignNamespace) {
         let curNamespace = namespace;
         if (assignNamespace && typeof assignNamespace === 'string') {
@@ -171,11 +183,25 @@ class Genji {
           curNamespace = assignNamespace;
         }
         const rootState = _genji.getStore().getState();
-        return rootState[curNamespace][stateKey];
+        if (!stateKey) {
+          return rootState[curNamespace];
+        } else if (typeof stateKey === 'string') {
+          return rootState[curNamespace][stateKey];
+        } else if (Array.isArray(stateKey)) {
+          const res = {};
+          stateKey.forEach(key => {
+            if (typeof key === 'string') {
+              res[key] = rootState[curNamespace][key];
+            }
+          });
+          return res;
+        } else {
+          return undefined;
+        }
       }
     };
 
-    const middlewares = [thunk.withExtraArgument(effectFeatures)];
+    const middlewares = [thunk.withExtraArgument(actionCreatorFeatures)];
     const enhancers = [];
 
     const rootReducer = combineReducers(_genji._reducers);
@@ -184,28 +210,28 @@ class Genji {
     //劫持 dispatch
     const oldDispatch = _genji._store.dispatch;
     const newDispatch = action => {
-      let foundedEffect;
-      _genji._effects.map(effect => {
-        if (effect.type === action.type) {
-          foundedEffect = effect;
+      let foundedActionCreatorObj;
+      _genji._actionCreatorObjs.map(actionCreatorObj => {
+        if (actionCreatorObj.type === action.type) {
+          foundedActionCreatorObj = actionCreatorObj;
         }
       });
-      if (!foundedEffect) {
+      if (!foundedActionCreatorObj) {
         oldDispatch(action);
         return Promise.resolve();
       }
-      const genjiActionCreator = foundedEffect.actionCreator;
+      const genjiActionCreator = foundedActionCreatorObj.actionCreator;
 
-      // 劫持effects附加特性
+      // 劫持actionCreator附加特性
       const { namespace, funcName } = getTypeTokensFromActionType(action.type);
       const thunkActionCreator = async (dispatch, getState, { save, pick }) => {
         const newSave = currying(save, namespace, funcName);
         const newPick = currying(pick, namespace, funcName);
-        return genjiActionCreator(action, { dispatch, getState, save: newSave, pick: newPick });
+        return genjiActionCreator(action, { getState, save: newSave, pick: newPick });
       };
 
       // 注入更新loading操作
-      if (!_genji.config.autoUpdateEffectLoading) {
+      if (!_genji.config.autoUpdateAsyncLoading) {
         return oldDispatch(thunkActionCreator);
       }
       const loadingKey = `${funcName}Loading`;

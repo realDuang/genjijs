@@ -1,7 +1,7 @@
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { connect, Provider } from 'react-redux';
 import Genji from '../../src';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 afterEach(cleanup);
 
@@ -12,24 +12,19 @@ const countModel = {
   state: {
     num: 0
   },
-  reducers: {
-    add(state, { payload }) {
-      return {
-        num: state.num + payload
-      };
-    }
-  },
-  effects: {
-    async addAsync({ payload: num }, { dispatch }) {
+  actionCreators: {
+    add({ payload }, { save, pick }) {
+      const num = pick('num');
+      save({ num: num + payload });
+    },
+    async addAsync({ payload }, { save, pick }) {
       return new Promise(resolve => {
         setTimeout(() => {
           resolve();
         }, 1000);
       }).then(() => {
-        dispatch({
-          type: 'count/add',
-          payload: num
-        });
+        const num = pick('num');
+        save({ num: num + payload });
       });
     }
   }

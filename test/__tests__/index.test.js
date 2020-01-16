@@ -10,23 +10,21 @@ const countModel = {
     name: ''
   },
   reducers: {
-    add(state, { payload }) {
+    addReducer(state, { payload }) {
       return {
         num: state.num + payload
       };
     }
   },
-  effects: {
-    async addEffect({ payload: value }, { dispatch }) {
-      dispatch({
-        type: 'count/add',
-        payload: value
-      });
+  actionCreators: {
+    add({ payload }, { save, pick }) {
+      const num = pick('num');
+      save({ num: num + payload });
     },
-    async saveEffect({ payload: value }, { save }) {
+    saveState({ payload: value }, { save }) {
       save({ num: value });
     },
-    async saveAnotherState(action, { save }) {
+    saveAnotherState(action, { save }) {
       save({ name: 'from count model' }, 'user');
     }
   }
@@ -38,31 +36,30 @@ const userModel = {
     name: 'unnamed',
     num: -1
   },
-  reducers: {
-    setName(state, { payload }) {
-      return {
-        name: payload.name
-      };
-    }
-  },
-  effects: {
-    async getNameAsync(action, { dispatch }) {
+
+  actionCreators: {
+    async getNameAsync(action, { save }) {
       return user.getUserName(4).then(data => {
-        dispatch({
-          type: 'user/setName',
-          payload: {
-            name: data
-          }
-        });
+        save({ name: data });
       });
     },
 
-    async getPickedState(action, { pick }) {
+    getPickedState(action, { pick }) {
       return pick('name');
     },
 
-    async getAnotherPickedState(action, { pick }) {
+    getAnotherPickedState(action, { pick }) {
       return pick('num', 'count');
+    },
+
+    getAllPickedState(action, { pick }) {
+      const { num } = pick();
+      return num;
+    },
+
+    getArrayPickedState(action, { pick }) {
+      const { num } = pick(['num', 'count']);
+      return num;
     }
   }
 };
@@ -72,20 +69,20 @@ test('reducers', () => {
   app.model(countModel);
   app.start();
   expect(app.getStore().getState().count.num).toEqual(0);
-  app.getStore().dispatch({ type: 'count/add', payload: 1 });
+  app.getStore().dispatch({ type: 'count/addReducer', payload: 1 });
   expect(app.getStore().getState().count.num).toEqual(1);
 });
 
-test('effects', () => {
+test('non-async actionCreators', () => {
   const app = new Genji();
   app.model(countModel);
   app.start();
   expect(app.getStore().getState().count.num).toEqual(0);
-  app.getStore().dispatch({ type: 'count/addEffect', payload: 100 });
+  app.getStore().dispatch({ type: 'count/add', payload: 100 });
   expect(app.getStore().getState().count.num).toEqual(100);
 });
 
-test('async/await dispatch', async () => {
+test('async/await actionCreators', async () => {
   const app = new Genji();
   app.model(userModel);
   app.start();
@@ -95,7 +92,7 @@ test('async/await dispatch', async () => {
 });
 
 test('injectLoading', () => {
-  const app = new Genji({ injectEffectLoading: true, autoUpdateEffectLoading: true });
+  const app = new Genji({ injectAsyncLoading: true, autoUpdateAsyncLoading: true });
   app.model(userModel);
   app.start();
   expect(app.getStore().getState().user.getNameAsyncLoading).toBe(false);
@@ -115,7 +112,7 @@ test('save functions', () => {
 
   expect(store.getState().count.num).toEqual(0);
   expect(store.getState().user.num).toEqual(-1);
-  store.dispatch({ type: 'count/saveEffect', payload: 1000 });
+  store.dispatch({ type: 'count/saveState', payload: 1000 });
   expect(store.getState().count.num).toEqual(1000);
   expect(store.getState().user.num).toEqual(-1);
 
@@ -140,4 +137,12 @@ test('pick functions', () => {
   expect(store.getState().count.num).toEqual(0);
   expect(store.getState().user.num).toEqual(-1);
   store.dispatch({ type: 'user/getAnotherPickedState' }).then(res => expect(res).toEqual(0));
+
+  expect(store.getState().count.num).toEqual(0);
+  expect(store.getState().user.num).toEqual(-1);
+  store.dispatch({ type: 'user/getAllPickedState' }).then(res => expect(res).toEqual(-1));
+
+  expect(store.getState().count.num).toEqual(0);
+  expect(store.getState().user.num).toEqual(-1);
+  store.dispatch({ type: 'user/getArrayPickedState' }).then(res => expect(res).toEqual(-1));
 });
