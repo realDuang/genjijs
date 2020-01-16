@@ -87,6 +87,7 @@ class Genji {
         };
         tmpReducers[key] = newReducer;
       });
+      tmpReducers['$$save'] = createReducer(curModel.namespace);
 
       if (curModel.effects) {
         Reflect.ownKeys(curModel.effects).map(key => {
@@ -131,16 +132,6 @@ class Genji {
       };
     }
 
-    // 异步注入reducer
-    function injectReducer({ type, reducer }) {
-      const { namespace, funcName } = getTypeTokensFromActionType(type);
-      const subReducersTree = _genji._reducersTree[namespace];
-      if (!subReducersTree || Object.prototype.hasOwnProperty.call(subReducersTree, funcName)) return;
-      subReducersTree[funcName] = reducer;
-      _genji._reducers[namespace] = reduceReducers(subReducersTree);
-      _genji._store.replaceReducer(combineReducers(_genji._reducers));
-    }
-
     // effects附加特性
     const effectFeatures = {
       save: function(namespace, funcName, updateState, assignNamespace) {
@@ -159,8 +150,7 @@ class Genji {
           }
           curNamespace = assignNamespace;
         }
-        const type = `${curNamespace}/$$${funcName}Save`;
-        injectReducer({ type, reducer: createReducer(curNamespace) });
+        const type = `${curNamespace}/$$save`;
         _genji._store.dispatch({ type, payload: updateState });
       },
 
