@@ -21,7 +21,7 @@ const countModel = {
       return new Promise(resolve => {
         setTimeout(() => {
           resolve();
-        }, 1000);
+        }, 100);
       }).then(() => {
         const num = pick('num');
         save({ num: num + payload });
@@ -82,6 +82,6 @@ test('connect', async () => {
     </Provider>
   );
   fireEvent.click(getByText('add'));
-  await delay(2000);
+  await delay(100);
   expect(getByTestId('count').innerHTML).toEqual('10');
 });

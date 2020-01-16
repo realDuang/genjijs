@@ -60,6 +60,11 @@ const userModel = {
     getArrayPickedState(action, { pick }) {
       const { num } = pick(['num', 'count']);
       return num;
+    },
+
+    getIllegalPickedState(action, { pick }) {
+      const state = pick(123);
+      return state;
     }
   }
 };
@@ -145,4 +150,6 @@ test('pick functions', () => {
   expect(store.getState().count.num).toEqual(0);
   expect(store.getState().user.num).toEqual(-1);
   store.dispatch({ type: 'user/getArrayPickedState' }).then(res => expect(res).toEqual(-1));
+
+  store.dispatch({ type: 'user/getIllegalPickedState' }).then(res => expect(res).toEqual(undefined));
 });
