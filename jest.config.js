@@ -1,4 +1,4 @@
 module.exports = {
-  collectCoverageFrom: ['test/*.{ts,tsx,js,jsx}'],
+  collectCoverageFrom: ['src/*.{ts,tsx,js,jsx}'],
   verbose: true
 };

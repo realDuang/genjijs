@@ -3,6 +3,7 @@
 
 [![npm version](https://img.shields.io/npm/v/genjijs.svg)](https://www.npmjs.com/package/genjijs)
 [![CircleCI](https://circleci.com/gh/kelekexiao123/genjijs.svg?style=svg)](https://circleci.com/gh/kelekexiao123/genjijs)
+[![Coverage Status](https://coveralls.io/repos/github/kelekexiao123/genjijs/badge.svg?branch=master)](https://coveralls.io/github/kelekexiao123/genjijs?branch=master)
 [![dependencies Status](https://david-dm.org/kelekexiao123/genjijs/status.svg)](https://david-dm.org/kelekexiao123/genjijs)
 [![devDependencies Status](https://david-dm.org/kelekexiao123/genjijs/dev-status.svg)](https://david-dm.org/kelekexiao123/genjijs?type=dev)
 [![downloads](https://img.shields.io/npm/dm/genjijs.svg)](https://npmcharts.com/compare/genjijs?minimal=true)
