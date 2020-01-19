@@ -14,7 +14,7 @@
     "lint:prettier": "prettier --check \"{app,example,mock,test}/**/*.{js,jsx,ts,tsx}\"",
     "fix:prettier": "prettier --write \"{app,example,mock,test}/**/*.{js,jsx,ts,tsx}\""
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Explore a better way to manage data state",
   "main": "src/index.js",
   "repository": {
