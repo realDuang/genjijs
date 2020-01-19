@@ -5,17 +5,18 @@
   "scripts": {
     "test": "jest --config jest.config.js",
     "dev": "webpack-dev-server --open --config webpack.config.dev.js",
-    "build": "webpack",
+    "build": "webpack & tsc",
     "fix": "npm run fix:eslint && npm run fix:prettier",
     "lint": "npm run lint:eslint && npm run lint:prettier",
     "lint:eslint": "eslint \"{app,example,mock,test}/**/*.{js,jsx,ts,tsx}\"",
     "fix:eslint": "eslint \"{app,example,mock,test}/**/*.{js,jsx,ts,tsx}\" --fix",
     "lint:prettier": "prettier --check \"{app,example,mock,test}/**/*.{js,jsx,ts,tsx}\"",
-    "fix:prettier": "prettier --write \"{app,example,mock,test}/**/*.{js,jsx,ts,tsx}\""
+    "fix:prettier": "prettier --write \"{app,example,mock,test}/**/*.{js,jsx,ts,tsx}\"",
+    "check-types": "tsc"
   },
   "version": "0.1.0",
   "description": "Explore a better way to manage data state",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kelekexiao123/genjijs.git"
@@ -35,6 +36,7 @@
   "devDependencies": {
     "@babel/core": "^7.6.4",
     "@babel/preset-env": "^7.6.3",
+    "@babel/preset-typescript": "^7.8.3",
     "@testing-library/react": "^9.4.0",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.6",
@@ -48,6 +50,8 @@
     "husky": "^4.0.1",
     "jest": "^24.9.0",
     "prettier": "^1.19.1",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.4",
     "webpack": "^4.41.2",
     "webpack-api-mocker": "^1.7.6",
     "webpack-cli": "^3.3.9",
@@ -60,6 +64,8 @@
     "@babel/plugin-transform-runtime": "^7.6.2",
     "@babel/polyfill": "^7.6.0",
     "@babel/preset-react": "^7.6.3",
+    "@types/react-redux": "^7.1.5",
+    "@types/redux": "^3.6.0",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-redux": "^7.1.1",
@@ -68,7 +74,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint && npm run test"
+      "pre-commit": "npm run lint && npm run test && npm run build"
     }
   }
 }
