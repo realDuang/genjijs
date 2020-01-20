@@ -8,7 +8,7 @@ English | [简体中文](https://github.com/kelekexiao123/genjijs/blob/master/RE
 [![devDependencies Status](https://david-dm.org/kelekexiao123/genjijs/dev-status.svg)](https://david-dm.org/kelekexiao123/genjijs?type=dev)
 [![downloads](https://img.shields.io/npm/dm/genjijs.svg)](https://npmcharts.com/compare/genjijs?minimal=true)
 
-A super-lightweight (core code only 5KB) data state management scheme based on `redux` and` redux-thunk`. (Inspired by [dva](https://github.com/dvajs/dva) )
+A super-lightweight (core code only 5KB) data state management scheme based on `redux` and `redux-thunk`. (Inspired by [dva](https://github.com/dvajs/dva) )
 
 ---
 
@@ -43,13 +43,15 @@ There is a simple example in this project which used all common features of `Gen
 
 In addition, the following demo may help you become more familiar with `Genji` :
 
-* [TodoList](https://codesandbox.io/s/reverent-galois-v5c8t?fontsize=14&hidenavigation=1&theme=dark)：A copy of TodoList given by [example](https://codesandbox.io/s/github/reduxjs/redux/tree/master/examples/todos) from `Redux` project, but use `Genji` to rewrite.
+* [example-typescript](https://codesandbox.io/s/genji-typescript-3dcoo?fontsize=14&hidenavigation=1&theme=dark)：If you want to have full `Typescript` supports, refer this.
+
+* [TodoList](https://codesandbox.io/s/genji-todolist-v5c8t?fontsize=14&hidenavigation=1&theme=dark)：A copy of TodoList given by [example](https://codesandbox.io/s/github/reduxjs/redux/tree/master/examples/todos) from `Redux` project, but use `Genji` to rewrite.
 
 ---
 
 ## Q & A :book:
 
-* ### difference with `dva`？
+* ### Difference from `dva`？
 
 `dva` is an excellent open source project worldwide, and is also the source of inspiration for this project (this can be seen from the project name). Specially thanks to `dva`.
 
@@ -66,7 +68,8 @@ Considering the user habits and functional enhancements brought by `redux-saga`,
   - [ ] Enhance `save` & `pick`, like get&set from other model or support parsing more parameter types
 - [x] Add Continuous integration, eslint, and unit test.
 - [x] Integrate `reducers` & `effects`
-- [ ] Rewrite `Aciton Type`, to support definition jumps & smart tips
+- [x] Rewrite `Aciton Type`, to support definition jumps & smart tips
+- [x] A full support of `Typescript`
 - [ ] Document
 
 ## LICENSE

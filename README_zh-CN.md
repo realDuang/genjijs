@@ -43,7 +43,9 @@ yarn add genjijs
 
 另外，下面的 `demo` 也许能帮助你更快地熟悉 `Genji` ：
 
-* [TodoList](https://codesandbox.io/s/reverent-galois-v5c8t?fontsize=14&hidenavigation=1&theme=dark)：一个模仿Redux官方给出的TodoList。（[Redux官网示例传送门](https://codesandbox.io/s/github/reduxjs/redux/tree/master/examples/todos)）
+* [example-typescript](https://codesandbox.io/s/genji-typescript-3dcoo?fontsize=14&hidenavigation=1&theme=dark)：如果你想拥有完整的 `Typescript` 支持，可以参考这个项目。
+
+* [TodoList](https://codesandbox.io/s/genji-todolist-v5c8t?fontsize=14&hidenavigation=1&theme=dark)：一个模仿Redux官方给出的TodoList。（[Redux官网示例传送门](https://codesandbox.io/s/github/reduxjs/redux/tree/master/examples/todos)）
 
 ---
 
@@ -67,7 +69,8 @@ yarn add genjijs
   - [ ] 实现 `save` 与 `pick`，如将功能作用范围扩展到对其他 `model` 中，或支持解析更多的参数类型
 - [x] 加入CI、eslint、单元测试功能
 - [x] 整合`reducers` 与 `effects`, 统一为 `actionCreator`
-- [ ] 改写`Aciton Type`，使之支持定义跳转与智能提示
+- [x] 改写`Aciton Type`，使之支持定义跳转与智能提示
+- [x] 加入完整的`Typescript`支持
 - [ ] 完善文档
 
 ## 开源许可证
