@@ -1,9 +1,10 @@
-import { createStore, applyMiddleware, combineReducers, compose } from 'redux';
+import { createStore, applyMiddleware, combineReducers, compose, ReducersMapObject } from 'redux';
 import thunk from 'redux-thunk';
+import { string } from 'prop-types';
 
 const ERROR_PREFIX = 'GENJI says:';
 
-function reduceReducers(reducers) {
+function reduceReducers(reducers: Function[]) {
   if (
     Object.prototype.toString.call(reducers) !== '[object Array]' &&
     Object.prototype.toString.call(reducers) !== '[object Object]'
@@ -12,10 +13,15 @@ function reduceReducers(reducers) {
   if (Object.prototype.toString.call(reducers) === '[object Object]') {
     reducers = Object.values(reducers);
   }
-  return (previous, current) => reducers.reduce((p, r) => r(p, current), previous);
+  return (previous: Function, current: Function) => reducers.reduce((p, r) => r(p, current), previous);
 }
 
-function getTypeTokensFromActionType(actionType) {
+function getTypeTokensFromActionType(
+  actionType: string
+): {
+  namespace: string;
+  funcName: string;
+} {
   const [namespace, funcName] = actionType.split('/');
   return {
     namespace,
@@ -23,16 +29,70 @@ function getTypeTokensFromActionType(actionType) {
   };
 }
 
-function currying(fn, ...outerArgs) {
-  return function(...innerArgs) {
+function currying(fn: Function, ...outerArgs: unknown[]) {
+  return function(...innerArgs: []) {
     return fn.apply(this, [...outerArgs, ...innerArgs]);
   };
 }
 
+export type Indexable<T extends {}> = T & {
+  [key: string]: any;
+};
+
+export interface GenjiAction {
+  type: string;
+  payload: any;
+}
+
+export interface GenjiOperations {
+  dispatch?: Function;
+  getState?: Function;
+  pick: Function;
+  save: Function;
+}
+
+export type GenjiDispatch = ({}: { type: string; payload?: any }) => Promise<any>;
+
+export type GenjiActionCreator = (action: GenjiAction, operations: GenjiOperations) => unknown;
+export type GenjiActionCreatorObj = {
+  type: string;
+  actionCreator: GenjiActionCreator;
+};
+export type GenjiReducer = (state: unknown, action: GenjiAction) => {};
+
+export interface GenjiActionCreators {
+  [key: string]: GenjiActionCreator;
+}
+export interface GenjiCommonReducers {
+  [key: string]: Function;
+}
+export interface GenjiModel {
+  namespace: string;
+  state: unknown;
+  actionCreators: GenjiActionCreators;
+  reducers?: GenjiCommonReducers;
+}
+export interface States {
+  [key: string]: unknown;
+}
+export interface GenjiConfig {
+  injectAsyncLoading?: boolean;
+  autoUpdateAsyncLoading?: boolean;
+}
+
 class Genji {
+  _models: GenjiModel[];
+  _store: any;
+  _states: States;
+  _reducers: GenjiCommonReducers;
+  _actionCreatorObjs: GenjiActionCreatorObj[];
+  config: GenjiConfig;
+  _reducersTree: {
+    [key: string]: GenjiReducer;
+  };
   constructor(config = {}) {
     this._models = [];
-    this._store = {};
+    this._store = null;
     this._states = {};
     this._reducers = {};
     this._actionCreatorObjs = [];
@@ -40,7 +100,7 @@ class Genji {
     this._reducersTree = {};
   }
 
-  model(model) {
+  model<T>(model: GenjiModel) {
     if (!model.namespace) {
       throw new Error(`${ERROR_PREFIX} namespace should be defined`);
     }
@@ -48,22 +108,23 @@ class Genji {
       throw new Error(`${ERROR_PREFIX} namespace "${model.namespace}" should be unique`);
     }
     this._models.push(model);
-
-    const types = {};
-    Object.keys(model.reducers || {}).map(key => (types[key] = `${model.namespace}/${key}`));
-    Object.keys(model.actionCreators || {}).map(key => (types[key] = `${model.namespace}/${key}`));
+    const types: {
+      [key in keyof T]?: string;
+    } = {};
+    Object.keys(model.reducers || {}).map(key => ((types as any)[key] = `${model.namespace}/${key}`));
+    Object.keys(model.actionCreators || {}).map(key => ((types as any)[key] = `${model.namespace}/${key}`));
     return types;
   }
 
   start() {
     const _genji = this;
-    const rootState = this._states;
+    const rootState: States = this._states;
 
     // 注册state
     for (let i = 0; i < _genji._models.length; i++) {
       const curModel = _genji._models[i];
       rootState[curModel.namespace] = {
-        ...curModel.state
+        ...(curModel.state as Object)
       };
     }
 
@@ -73,34 +134,34 @@ class Genji {
       const tmpReducers = {
         // 为每个 model 默认注入 '$$save' reducer
         $$save: createReducer(curModel.namespace)
-      };
+      } as any;
 
-      const reducerExist = key => {
+      const reducerExist = (key: string) => {
         if (!curModel.reducers) return false;
         return Reflect.ownKeys(curModel.reducers).some(reducerKey => reducerKey === key);
       };
-      const actionCreatorsExist = key => {
+      const actionCreatorsExist = (key: string) => {
         if (!curModel.actionCreators) return false;
         return Reflect.ownKeys(curModel.actionCreators).some(actionCreatorsKey => actionCreatorsKey === key);
       };
 
       if (curModel.reducers) {
-        Reflect.ownKeys(curModel.reducers).map(reducerName => {
+        Reflect.ownKeys(curModel.reducers).map((reducerName: string) => {
           const reducerNameFounded = actionCreatorsExist(reducerName);
           if (reducerNameFounded) {
             throw new Error(`${ERROR_PREFIX} function name ${`"${reducerName}"`} are both in reducer & actionCreator.`);
           }
           const oldReducer = curModel.reducers[reducerName];
-          const newReducer = (state = rootState[curModel.namespace], action) => {
+          const newReducer = (state = rootState[curModel.namespace], action: GenjiAction) => {
             if (action.type !== `${curModel.namespace}/${reducerName}`) return state;
-            return { ...state, ...oldReducer(state, action) };
+            return { ...(state as Object), ...oldReducer(state, action) };
           };
           tmpReducers[reducerName] = newReducer;
         });
       }
 
       if (curModel.actionCreators) {
-        Reflect.ownKeys(curModel.actionCreators).map(actionCreatorName => {
+        Reflect.ownKeys(curModel.actionCreators).map((actionCreatorName: string) => {
           const actionCreatorNameFounded = reducerExist(actionCreatorName);
           if (actionCreatorNameFounded) {
             throw new Error(
@@ -114,11 +175,11 @@ class Genji {
           // 注入操作 loading 的 reducer
           if (this.config.injectAsyncLoading) {
             const loadingKey = `${actionCreatorName}Loading`;
-            rootState[curModel.namespace][loadingKey] = false;
-            const newReducer = (state = rootState[curModel.namespace], action) => {
+            (rootState as any)[curModel.namespace][loadingKey] = false;
+            const newReducer = (state = rootState[curModel.namespace], action: GenjiAction) => {
               if (action.type !== `${curModel.namespace}/$$${actionCreatorName}Loading`) return state;
-              state[loadingKey] = action.payload[loadingKey];
-              return { ...state };
+              (state as any)[loadingKey] = action.payload[loadingKey];
+              return { ...(state as Object) };
             };
             tmpReducers[actionCreatorName] = newReducer;
           }
@@ -131,14 +192,14 @@ class Genji {
     }
 
     // 创建新的reducer
-    function createReducer(namespace) {
-      return function(state = rootState[namespace], action) {
+    function createReducer(namespace: string) {
+      return function(state = rootState[namespace], action: GenjiAction) {
         if (!action) return state;
         const { namespace: actionNamespace } = getTypeTokensFromActionType(action.type);
         if (namespace !== actionNamespace) return state;
 
         return {
-          ...state,
+          ...(state as Object),
           ...action.payload
         };
       };
@@ -146,7 +207,7 @@ class Genji {
 
     // actionCreator附加特性
     const actionCreatorFeatures = {
-      save: function(namespace, funcName, updateState, assignNamespace) {
+      save: function(namespace: string, funcName: string, updateState: unknown, assignNamespace: string) {
         let curNamespace = namespace;
         if (assignNamespace && typeof assignNamespace === 'string') {
           const curModel = _genji._models.find(model => model.namespace === assignNamespace);
@@ -166,7 +227,7 @@ class Genji {
         _genji._store.dispatch({ type, payload: updateState });
       },
 
-      pick: function(namespace, funcName, stateKey, assignNamespace) {
+      pick: function(namespace: string, funcName: string, stateKey: {}, assignNamespace: string) {
         let curNamespace = namespace;
         if (assignNamespace && typeof assignNamespace === 'string') {
           const curModel = _genji._models.find(model => model.namespace === assignNamespace);
@@ -188,7 +249,7 @@ class Genji {
         } else if (typeof stateKey === 'string') {
           return rootState[curNamespace][stateKey];
         } else if (Array.isArray(stateKey)) {
-          const res = {};
+          const res: { [key: string]: unknown } = {};
           stateKey.forEach(key => {
             if (typeof key === 'string') {
               res[key] = rootState[curNamespace][key];
@@ -202,15 +263,15 @@ class Genji {
     };
 
     const middlewares = [thunk.withExtraArgument(actionCreatorFeatures)];
-    const enhancers = [];
+    const enhancers: Function[] = [];
 
-    const rootReducer = combineReducers(_genji._reducers);
+    const rootReducer = combineReducers(_genji._reducers as ReducersMapObject);
     _genji._store = createStore(rootReducer, rootState, compose(applyMiddleware(...middlewares), ...enhancers));
 
     //劫持 dispatch
     const oldDispatch = _genji._store.dispatch;
-    const newDispatch = action => {
-      let foundedActionCreatorObj;
+    const newDispatch = (action: GenjiAction) => {
+      let foundedActionCreatorObj: GenjiActionCreatorObj;
       _genji._actionCreatorObjs.map(actionCreatorObj => {
         if (actionCreatorObj.type === action.type) {
           foundedActionCreatorObj = actionCreatorObj;
@@ -224,7 +285,11 @@ class Genji {
 
       // 劫持actionCreator附加特性
       const { namespace, funcName } = getTypeTokensFromActionType(action.type);
-      const thunkActionCreator = async (dispatch, getState, { save, pick }) => {
+      const thunkActionCreator = async (
+        dispatch: Function,
+        getState: Function,
+        { save, pick }: { save: Function; pick: Function }
+      ) => {
         const newSave = currying(save, namespace, funcName);
         const newPick = currying(pick, namespace, funcName);
         return genjiActionCreator(action, { getState, save: newSave, pick: newPick });
@@ -235,7 +300,7 @@ class Genji {
         return oldDispatch(thunkActionCreator);
       }
       const loadingKey = `${funcName}Loading`;
-      const updateLoadingAction = toggle => ({
+      const updateLoadingAction = (toggle: boolean) => ({
         type: `${namespace}/$$${funcName}Loading`,
         payload: {
           [loadingKey]: toggle

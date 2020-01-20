@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react';
+// import React, { useEffect } from 'react';
+import * as React from 'react';
+import { useEffect } from 'react';
 import { connect } from 'react-redux';
-import { unitTypes } from './index.js';
+import { unitTypes } from './index';
 
 const mapStateToProps = rootState => {
   return { ...rootState, rootState };

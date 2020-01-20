@@ -4,7 +4,7 @@ const apiMocker = require('webpack-api-mocker');
 
 module.exports = {
   mode: 'development',
-  entry: './example/',
+  entry: './example/index.js',
   output: {
     filename: 'dist.js',
     path: path.resolve(__dirname, '..', 'dist')
@@ -12,7 +12,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.js|\.tsx?$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader'
@@ -32,6 +32,6 @@ module.exports = {
   plugins: [new HtmlWebpackPlugin({ template: './index.html' })],
   resolve: {
     alias: {},
-    extensions: ['.js', '.json', '.css']
+    extensions: ['.ts', '.tsx', '.js', '.json', '.css']
   }
 };

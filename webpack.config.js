@@ -7,11 +7,16 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
-        use: 'babel-loader',
-        include: /src/,
-        exclude: /node_modules/
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader'
+        }
       }
     ]
+  },
+  resolve: {
+    alias: {},
+    extensions: ['.ts', '.tsx', '.js', '.json']
   }
 };
