@@ -1,6 +1,6 @@
 module.exports = {
   extends: ['eslint:recommended', 'prettier'],
-  parser: 'babel-eslint',
+  parser: '@typescript-eslint/parser',
   env: {
     browser: true,
     commonjs: true,
@@ -17,7 +17,7 @@ module.exports = {
   },
   root: true,
 
-  plugins: ['import', 'react'],
+  plugins: ['import', 'react', '@typescript-eslint'],
 
   rules: { 'no-unused-vars': 0 }
 };

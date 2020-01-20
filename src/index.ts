@@ -51,7 +51,7 @@ export interface GenjiOperations {
   save: Function;
 }
 
-export type GenjiDispatch = ({}: { type: string; payload?: any }) => Promise<any>;
+export type GenjiDispatch = (action: { type: string; payload?: any }) => Promise<any>;
 
 export type GenjiActionCreator = (action: GenjiAction, operations: GenjiOperations) => unknown;
 export type GenjiActionCreatorObj = {
@@ -68,7 +68,9 @@ export interface GenjiCommonReducers {
 }
 export interface GenjiModel {
   namespace: string;
-  state: unknown;
+  state: {
+    [key: string]: unknown;
+  };
   actionCreators: GenjiActionCreators;
   reducers?: GenjiCommonReducers;
 }
