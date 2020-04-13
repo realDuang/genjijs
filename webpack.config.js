@@ -2,7 +2,13 @@ let path = require('path');
 
 module.exports = {
   entry: { index: './src/' },
-  output: { filename: '[name].min.js', path: path.resolve('dist') },
+  output: {
+    libraryTarget: 'umd',
+    libraryExport: 'default',
+    library: 'Genji',
+    filename: '[name].min.js',
+    path: path.resolve('dist')
+  },
   mode: 'production',
   module: {
     rules: [
